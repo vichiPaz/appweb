@@ -3,12 +3,12 @@ import {getAuth} from "firebase/auth"
 import { getFirestore } from "firebase/firestore/lite";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB3iIWcv9PQXx7ehtGc3GWPx7WnHndez24",
-  authDomain: "vue-firebase-2-31128.firebaseapp.com",
-  projectId: "vue-firebase-2-31128",
-  storageBucket: "vue-firebase-2-31128.firebasestorage.app",
-  messagingSenderId: "645517401115",
-  appId: "1:645517401115:web:6ffbbb0407528a63fb2cbe",
+  apiKey: "AIzaSyC92WRht8eyV1sYdvzTCru6v-BepOAUH_4",
+  authDomain: "vue-firebase-2-31128-afb7c.firebaseapp.com",
+  projectId: "vue-firebase-2-31128-afb7c",
+  storageBucket: "vue-firebase-2-31128-afb7c.firebasestorage.app",
+  messagingSenderId: "501569443145",
+  appId: "1:501569443145:web:f9707c0544df869974f698",
 };
 
 const app = initializeApp(firebaseConfig);
