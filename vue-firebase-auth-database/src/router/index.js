@@ -1,4 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user';
+
+const requireAuth = async(to, from, next) => {
+  const userStore = useUserStore()
+  const user = await userStore.currentUser()
+
+  if (user) {
+    next()
+  } else {
+    next( { name: 'login' } )
+  }
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,6 +19,14 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
+      beforeEnter: requireAuth
+
+    },
+    {
+      path: '/editar/:id',
+      name: 'editar',
+      component: () => import('../views/EditarView.vue'),
+      beforeEnter: requireAuth
     },
     {
       path: '/login',
