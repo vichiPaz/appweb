@@ -1,14 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user';
+import store from '../store'
 
-const requireAuth = async(to, from, next) => {
-  const userStore = useUserStore()
-  const user = await userStore.currentUser()
+const requireAuth = async (to, from, next) => {
+  const user = await store.dispatch('currentUser')
 
   if (user) {
     next()
   } else {
-    next( { name: 'login' } )
+    next({ name: 'login' })
   }
 }
 
@@ -17,10 +16,19 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      redirect: '/home'
+    },
+    {
+      path: '/home',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
       beforeEnter: requireAuth
-
+    },
+    {
+      path: '/administracion',
+      name: 'administracion',
+      component: () => import('../views/AdministracionView.vue'),
+      beforeEnter: requireAuth
     },
     {
       path: '/editar/:id',
@@ -31,14 +39,14 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/LoginView.vue')
     },
     {
       path: '/register',
       name: 'register',
-      component: () => import('../views/RegisterView.vue'),
-    },
-  ],
+      component: () => import('../views/RegisterView.vue')
+    }
+  ]
 })
 
 export default router
