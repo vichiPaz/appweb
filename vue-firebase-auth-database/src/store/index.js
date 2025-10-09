@@ -196,10 +196,11 @@ export default createStore({
       }
     },
     
-    async updateCurso({ commit }, { id, curso }) {
+    async updateCurso({ commit }, curso) {
       try {
+        const { id, ...cursoData } = curso
         const cursoDoc = doc(db, 'cursos', id)
-        await updateDoc(cursoDoc, curso)
+        await updateDoc(cursoDoc, cursoData)
         console.log('Curso actualizado:', id)
         // No necesitamos hacer commit porque onSnapshot lo detectará automáticamente
       } catch (error) {
