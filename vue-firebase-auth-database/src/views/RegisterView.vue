@@ -81,9 +81,9 @@ const handleSubmit = async () => {
                 class="btn w-100"
                 :disabled="loadingUser"
                 style="
-                  background: linear-gradient(45deg, var(--treinta-uno-verde) 0%, var(--treinta-uno-azul) 50%, var(--treinta-uno-rojo) 100%);
+                  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
                   border: 3px solid var(--treinta-uno-negro);
-                  color: white;
+                  color: var(--treinta-uno-negro);
                   font-weight: bold;
                   font-size: 1.1rem;
                   padding: 15px;
@@ -96,7 +96,7 @@ const handleSubmit = async () => {
                 @mouseover="$event.target.style.transform = 'translateY(-3px) scale(1.02)'"
                 @mouseout="$event.target.style.transform = 'translateY(0) scale(1)'"
               >
-                <span v-if="loadingUser" class="spinner-border spinner-border-sm me-2"></span>
+                <span v-if="loadingUser" class="spinner-border spinner-border-sm me-2" style="color: var(--treinta-uno-negro);"></span>
                 {{ loadingUser ? 'Creando cuenta...' : 'CREAR CUENTA' }}
               </button>
             </form>
