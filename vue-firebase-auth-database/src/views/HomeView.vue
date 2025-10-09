@@ -8,6 +8,18 @@ const cursos = computed(() => store.getters.getCursos)
 const loadingCursos = computed(() => store.getters.isLoadingCursos)
 const userEmail = computed(() => store.getters.getUserEmail)
 
+const handleImageError = (event) => {
+  // Si falla la imagen, usar una imagen de respaldo
+  event.target.src = 'https://picsum.photos/300/200?random=fallback'
+}
+
+const getImageUrl = (imgUrl) => {
+  if (!imgUrl) return 'https://picsum.photos/300/200?random=default'
+  // Agregar timestamp para evitar cache
+  const separator = imgUrl.includes('?') ? '&' : '?'
+  return `${imgUrl}${separator}t=${Date.now()}`
+}
+
 onMounted(() => {
   store.dispatch('getCursos')
 })
@@ -43,10 +55,11 @@ onMounted(() => {
           <div class="card h-100 shadow-sm curso-card">
             <div class="card-img-top-wrapper">
               <img 
-                :src="curso.img" 
+                :src="getImageUrl(curso.img)" 
                 :alt="curso.nombre"
                 class="card-img-top"
-                @error="$event.target.src='https://via.placeholder.com/300x200?text=Sin+Imagen'"
+                @error="handleImageError"
+                loading="lazy"
               >
               <span 
                 v-if="curso.estado" 

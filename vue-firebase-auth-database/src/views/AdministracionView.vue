@@ -39,7 +39,7 @@ const openAddModal = () => {
     descripcion: '',
     cupos: 0,
     inscritos: 0,
-    img: ''
+    img: 'https://picsum.photos/300/200?random=new'
   }
   showAddModal.value = true
 }
@@ -95,6 +95,7 @@ const toggleEstadoCurso = async (curso) => {
   }
 }
 
+
 onMounted(() => {
   store.dispatch('getCursos')
 })
@@ -113,14 +114,17 @@ onMounted(() => {
         @click="openAddModal"
         class="btn btn-lg"
         style="
-          background: linear-gradient(45deg, var(--treinta-uno-verde) 0%, var(--treinta-uno-azul) 50%, var(--treinta-uno-rojo) 100%);
+          background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
           border: 3px solid var(--treinta-uno-negro);
-          color: white;
+          color: var(--treinta-uno-negro);
           font-weight: bold;
           padding: 15px 30px;
           border-radius: 15px;
           box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+          transition: all 0.3s ease;
         "
+        @mouseover="$event.target.style.transform = 'translateY(-3px) scale(1.02)'"
+        @mouseout="$event.target.style.transform = 'translateY(0) scale(1)'"
       >
         ➕ Agregar Nuevo Curso
       </button>
@@ -231,63 +235,73 @@ onMounted(() => {
     <!-- Modal para agregar curso -->
     <div v-if="showAddModal" class="modal show d-block" style="background: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border: 3px solid var(--treinta-uno-negro); border-radius: 20px;">
-          <div class="modal-header" style="background: linear-gradient(45deg, var(--treinta-uno-azul), var(--treinta-uno-verde)); color: white;">
-            <h5 class="modal-title fw-bold">➕ Agregar Nuevo Curso</h5>
-            <button type="button" class="btn-close btn-close-white" @click="closeAddModal"></button>
+        <div class="modal-content" style="border: 3px solid var(--treinta-uno-negro); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div class="modal-header" style="background: linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja)); color: var(--treinta-uno-negro); border-bottom: 3px solid var(--treinta-uno-negro);">
+            <h5 class="modal-title fw-bold" style="color: var(--treinta-uno-negro); text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">➕ Agregar Nuevo Curso</h5>
+            <button type="button" class="btn-close" @click="closeAddModal" style="filter: invert(1);"></button>
           </div>
           <div class="modal-body" style="background: var(--treinta-uno-blanco);">
             <form @submit.prevent="confirmAddCurso">
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Código:</label>
-                  <input v-model="nuevoCurso.codigo" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro);" required>
+                  <input v-model="nuevoCurso.codigo" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Nombre:</label>
-                  <input v-model="nuevoCurso.nombre" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro);" required>
+                  <input v-model="nuevoCurso.nombre" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required>
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Precio:</label>
-                  <input v-model="nuevoCurso.precio" type="number" class="form-control" style="border: 2px solid var(--treinta-uno-negro);" required>
+                  <input v-model="nuevoCurso.precio" type="number" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Duración:</label>
-                  <input v-model="nuevoCurso.duracion" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro);" required>
+                  <input v-model="nuevoCurso.duracion" type="text" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required>
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Cupos:</label>
-                  <input v-model.number="nuevoCurso.cupos" type="number" class="form-control" style="border: 2px solid var(--treinta-uno-negro);" required>
+                  <input v-model.number="nuevoCurso.cupos" type="number" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">URL Imagen:</label>
-                  <input v-model="nuevoCurso.img" type="url" class="form-control" style="border: 2px solid var(--treinta-uno-negro);">
+                  <input v-model="nuevoCurso.img" type="url" class="form-control" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" placeholder="https://ejemplo.com/imagen.jpg">
                 </div>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Descripción:</label>
-                <textarea v-model="nuevoCurso.descripcion" class="form-control" rows="3" style="border: 2px solid var(--treinta-uno-negro);" required></textarea>
+                <textarea v-model="nuevoCurso.descripcion" class="form-control" rows="3" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);" required placeholder="Describe el curso..."></textarea>
               </div>
               <div class="mb-3">
                 <div class="form-check">
-                  <input v-model="nuevoCurso.estado" type="checkbox" class="form-check-input" id="estado">
-                  <label class="form-check-label fw-bold" for="estado" style="color: var(--treinta-uno-negro);">Curso activo</label>
+                  <input v-model="nuevoCurso.estado" type="checkbox" class="form-check-input" id="estado" style="border: 2px solid var(--treinta-uno-negro);">
+                  <label class="form-check-label fw-bold" for="estado" style="color: var(--treinta-uno-negro);">✅ Curso activo</label>
                 </div>
               </div>
             </form>
           </div>
-          <div class="modal-footer" style="background: var(--treinta-uno-beige);">
-            <button type="button" class="btn btn-secondary" @click="closeAddModal" style="border: 2px solid var(--treinta-uno-negro); font-weight: bold;">Cancelar</button>
-            <button type="button" class="btn" @click="confirmAddCurso" style="
+          <div class="modal-footer" style="background: var(--treinta-uno-beige); border-top: 3px solid var(--treinta-uno-negro); padding: 1.5rem;">
+            <button type="button" class="btn btn-lg me-3" @click="closeAddModal" style="
+              background: var(--treinta-uno-rojo);
+              color: white;
+              border: 3px solid var(--treinta-uno-negro);
+              font-weight: bold;
+              border-radius: 10px;
+              padding: 10px 25px;
+            ">❌ Cancelar</button>
+            <button type="button" class="btn btn-lg" @click="confirmAddCurso" style="
               background: linear-gradient(45deg, var(--treinta-uno-verde), var(--treinta-uno-azul));
               color: white;
-              border: 2px solid var(--treinta-uno-negro);
+              border: 3px solid var(--treinta-uno-negro);
               font-weight: bold;
-            ">Agregar Curso</button>
+              border-radius: 10px;
+              padding: 10px 25px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            ">✅ Agregar Curso</button>
           </div>
         </div>
       </div>

@@ -182,12 +182,15 @@ export default createStore({
       }
     },
     
-    async addCurso({ commit }, curso) {
+    async addCurso({ commit, dispatch }, curso) {
       try {
         const cursosCollection = collection(db, 'cursos')
         const docRef = await addDoc(cursosCollection, curso)
         console.log('Curso agregado con ID:', docRef.id)
-        // No necesitamos hacer commit porque onSnapshot lo detectará automáticamente
+        
+        // Forzar recarga de datos para asegurar sincronización
+        await dispatch('getCursos')
+        
         return docRef.id
       } catch (error) {
         console.error('Error al agregar curso:', error)
@@ -196,12 +199,16 @@ export default createStore({
       }
     },
     
-    async updateCurso({ commit }, curso) {
+    async updateCurso({ commit, dispatch }, curso) {
       try {
         const { id, ...cursoData } = curso
         const cursoDoc = doc(db, 'cursos', id)
         await updateDoc(cursoDoc, cursoData)
         console.log('Curso actualizado:', id)
+        
+        // Forzar recarga de datos para asegurar sincronización
+        await dispatch('getCursos')
+        
         // No necesitamos hacer commit porque onSnapshot lo detectará automáticamente
       } catch (error) {
         console.error('Error al actualizar curso:', error)
