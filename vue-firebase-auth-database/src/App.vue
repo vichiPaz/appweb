@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useStore } from 'vuex'
 import NavBar from './components/NavBar.vue'
+import Footer from './components/Footer.vue'
 
 const store = useStore()
 
@@ -17,6 +18,7 @@ onMounted(() => {
   <div id="app">
     <NavBar />
     <RouterView />
+    <Footer />
   </div>
 </template>
 
