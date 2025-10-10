@@ -203,7 +203,8 @@ export default createStore({
             commit('SET_USER', { email: user.email, uid: user.uid })
           } else {
             commit('SET_USER', null)
-            commit('RESET_CURSOS')
+            // No resetear cursos cuando el usuario no está logueado
+            // Los cursos deben estar disponibles para todos
           }
           resolve(user)
           unsubscribe()
