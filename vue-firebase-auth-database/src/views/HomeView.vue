@@ -7,6 +7,7 @@ const store = useStore()
 const cursos = computed(() => store.getters.getCursos)
 const loadingCursos = computed(() => store.getters.isLoadingCursos)
 const userEmail = computed(() => store.getters.getUserEmail)
+const isLoggedIn = computed(() => store.getters.isLoggedIn)
 
 const handleImageError = (event) => {
   // Si falla la imagen, usar una imagen de respaldo
@@ -25,6 +26,16 @@ const cursoEnCarrito = (cursoId) => {
 }
 
 const inscribirseEnCurso = async (curso) => {
+  // Verificar si el usuario está logueado
+  if (!isLoggedIn.value) {
+    const confirmar = confirm('🔐 Para agregar cursos al carrito necesitas iniciar sesión.\n\n¿Deseas ir al login?')
+    if (confirmar) {
+      // Redirigir al login
+      window.location.href = '/login'
+    }
+    return
+  }
+  
   if (cursoEnCarrito(curso.id)) {
     alert('✅ Este curso ya está en tu carrito')
     return
@@ -279,8 +290,8 @@ onMounted(() => {
 }
 
 .btn-inscrito {
-  background: linear-gradient(45deg, var(--treinta-uno-verde), var(--treinta-uno-azul)) !important;
-  color: white !important;
+  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%) !important;
+  color: var(--treinta-uno-negro) !important;
   cursor: not-allowed;
   opacity: 0.9;
   border: 3px solid var(--treinta-uno-negro);
