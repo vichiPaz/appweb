@@ -15,7 +15,7 @@ onMounted(() => {
 
 <template>
   <div id="app">
-    <NavBar v-if="isAuthenticated" />
+    <NavBar />
     <RouterView />
   </div>
 </template>

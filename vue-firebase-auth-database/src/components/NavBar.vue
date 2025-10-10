@@ -27,14 +27,19 @@
               Inicio
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="isLoggedIn" class="nav-item">
+            <router-link class="nav-link" to="/carrito" active-class="active" style="color: var(--treinta-uno-beige) !important;">
+              🛒 Carrito ({{ totalCarrito }})
+            </router-link>
+          </li>
+          <li v-if="isLoggedIn" class="nav-item">
             <router-link class="nav-link" to="/administracion" active-class="active" style="color: var(--treinta-uno-beige) !important;">
               Administración
             </router-link>
           </li>
         </ul>
         
-        <div class="d-flex align-items-center">
+        <div v-if="isLoggedIn" class="d-flex align-items-center">
           <span class="text-white me-3">
             {{ userEmail }}
           </span>
@@ -46,6 +51,15 @@
           >
             Cerrar Sesión
           </button>
+        </div>
+        <div v-else class="d-flex align-items-center">
+          <router-link 
+            to="/login" 
+            class="btn btn-outline-warning btn-sm"
+            style="border-color: var(--treinta-uno-amarillo); color: var(--treinta-uno-amarillo);"
+          >
+            Iniciar Sesión
+          </router-link>
         </div>
       </div>
     </div>
@@ -62,6 +76,8 @@ export default {
     const store = useStore()
     
     const userEmail = computed(() => store.getters.getUserEmail)
+    const totalCarrito = computed(() => store.getters.getTotalCarrito)
+    const isLoggedIn = computed(() => store.getters.isAuthenticated)
     
     const handleLogout = () => {
       if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
@@ -71,6 +87,8 @@ export default {
     
     return {
       userEmail,
+      totalCarrito,
+      isLoggedIn,
       handleLogout
     }
   }

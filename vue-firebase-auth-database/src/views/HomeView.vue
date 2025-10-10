@@ -7,6 +7,58 @@ const store = useStore()
 const cursos = computed(() => store.getters.getCursos)
 const loadingCursos = computed(() => store.getters.isLoadingCursos)
 const userEmail = computed(() => store.getters.getUserEmail)
+const isLoggedIn = computed(() => store.getters.isAuthenticated)
+
+const handleImageError = (event) => {
+  // Si falla la imagen, usar una imagen de respaldo
+  event.target.src = 'https://picsum.photos/300/200?random=fallback'
+}
+
+const getImageUrl = (imgUrl) => {
+  if (!imgUrl) return 'https://picsum.photos/300/200?random=default'
+  // Agregar timestamp para evitar cache
+  const separator = imgUrl.includes('?') ? '&' : '?'
+  return `${imgUrl}${separator}t=${Date.now()}`
+}
+
+const cursoEnCarrito = (cursoId) => {
+  return store.getters.getCursoEnCarrito(cursoId)
+}
+
+const inscribirseEnCurso = async (curso) => {
+  // Verificar si el usuario está logueado
+  if (!isLoggedIn.value) {
+    const confirmar = confirm('🔐 Para agregar cursos al carrito necesitas iniciar sesión.\n\n¿Deseas ir al login?')
+    if (confirmar) {
+      // Redirigir al login
+      window.location.href = '/login'
+    }
+    return
+  }
+  
+  if (cursoEnCarrito(curso.id)) {
+    alert('✅ Este curso ya está en tu carrito')
+    return
+  }
+  
+  if (curso.inscritos >= curso.cupos) {
+    alert('❌ No hay cupos disponibles para este curso')
+    return
+  }
+  
+  try {
+    // Agregar al carrito
+    store.dispatch('agregarAlCarrito', curso)
+    
+    // Reducir cupos disponibles en Firebase
+    await store.dispatch('reducirCupo', curso.id)
+    
+    alert(`🛒 ¡Curso "${curso.nombre}" agregado al carrito! Se ha reservado tu cupo.`)
+  } catch (error) {
+    console.error('Error al inscribirse en el curso:', error)
+    alert('❌ Error al inscribirse en el curso: ' + error.message)
+  }
+}
 
 onMounted(() => {
   store.dispatch('getCursos')
@@ -43,10 +95,11 @@ onMounted(() => {
           <div class="card h-100 shadow-sm curso-card">
             <div class="card-img-top-wrapper">
               <img 
-                :src="curso.img" 
+                :src="getImageUrl(curso.img)" 
                 :alt="curso.nombre"
                 class="card-img-top"
-                @error="$event.target.src='https://via.placeholder.com/300x200?text=Sin+Imagen'"
+                @error="handleImageError"
+                loading="lazy"
               >
               <span 
                 v-if="curso.estado" 
@@ -118,6 +171,38 @@ onMounted(() => {
                 </small>
               </div>
             </div>
+            
+            <!-- Card Footer con botón de inscripción -->
+            <div class="card-footer bg-transparent" style="border-top: 3px solid var(--treinta-uno-negro);">
+              <div class="d-grid">
+                <button 
+                  v-if="curso.estado && (curso.cupos - curso.inscritos > 0)"
+                  @click="inscribirseEnCurso(curso)"
+                  class="btn btn-lg btn-inscribirse"
+                  :class="{ 'btn-inscrito': cursoEnCarrito(curso.id) }"
+                  :disabled="cursoEnCarrito(curso.id)"
+                >
+                  <span v-if="cursoEnCarrito(curso.id)">✅ En Carrito</span>
+                  <span v-else>🛒 Inscribirse Ahora</span>
+                </button>
+                
+                <button 
+                  v-else-if="curso.estado && (curso.cupos - curso.inscritos <= 0)"
+                  class="btn btn-lg btn-sin-cupos"
+                  disabled
+                >
+                  ❌ Sin Cupos Disponibles
+                </button>
+                
+                <button 
+                  v-else
+                  class="btn btn-lg btn-no-disponible"
+                  disabled
+                >
+                  📚 Curso No Disponible
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -186,5 +271,59 @@ onMounted(() => {
 .badge {
   font-size: 0.8rem;
   padding: 0.5rem 0.8rem;
+}
+
+.btn-inscribirse {
+  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
+  color: var(--treinta-uno-negro);
+  border: 3px solid var(--treinta-uno-negro);
+  font-weight: bold;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-inscribirse:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  background: linear-gradient(45deg, var(--treinta-uno-rojo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-amarillo) 100%);
+}
+
+.btn-inscrito {
+  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%) !important;
+  color: var(--treinta-uno-negro) !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+  border: 3px solid var(--treinta-uno-negro);
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-sin-cupos {
+  background: linear-gradient(45deg, var(--treinta-uno-rojo), var(--treinta-uno-naranja));
+  color: white;
+  border: 3px solid var(--treinta-uno-negro);
+  font-weight: bold;
+  border-radius: 12px;
+  cursor: not-allowed;
+  opacity: 0.8;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-no-disponible {
+  background: linear-gradient(45deg, var(--treinta-uno-negro), #4a4a4a);
+  color: var(--treinta-uno-beige);
+  border: 3px solid var(--treinta-uno-negro);
+  font-weight: bold;
+  border-radius: 12px;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card-footer .btn:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 </style>

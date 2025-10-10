@@ -21,13 +21,18 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: () => import('../views/HomeView.vue'),
-      beforeEnter: requireAuth
+      component: () => import('../views/HomeView.vue')
     },
     {
       path: '/administracion',
       name: 'administracion',
       component: () => import('../views/AdministracionView.vue'),
+      beforeEnter: requireAuth
+    },
+    {
+      path: '/carrito',
+      name: 'carrito',
+      component: () => import('../views/CarritoView.vue'),
       beforeEnter: requireAuth
     },
     {

@@ -47,21 +47,23 @@ const handleSubmit = async () => {
   try {
     await store.dispatch('updateCurso', {
       id: route.params.id,
-      curso: {
-        codigo: codigo.value,
-        nombre: nombre.value,
-        estado: estado.value,
-        precio: precio.value,
-        duracion: duracion.value,
-        descripcion: descripcion.value,
-        cupos: Number(cupos.value),
-        inscritos: Number(inscritos.value),
-        img: img.value
-      }
+      codigo: codigo.value,
+      nombre: nombre.value,
+      estado: estado.value,
+      precio: precio.value,
+      duracion: duracion.value,
+      descripcion: descripcion.value,
+      cupos: Number(cupos.value),
+      inscritos: Number(inscritos.value),
+      img: img.value
     })
     
-    alert('✅ Curso actualizado correctamente')
-    router.push({ name: 'administracion' })
+    alert('✅ Curso actualizado correctamente. Los cambios se verán reflejados en todas las vistas.')
+    
+    // Pequeño delay para asegurar que los datos se sincronicen
+    setTimeout(() => {
+      router.push({ name: 'administracion' })
+    }, 1000)
   } catch (error) {
     console.error(error)
   }
@@ -157,13 +159,29 @@ const handleSubmit = async () => {
               </div>
 
               <div class="mb-3">
-                <label for="img" class="form-label">URL de la imagen</label>
+                <label for="img" class="form-label fw-bold" style="color: var(--treinta-uno-negro);">URL de la imagen:</label>
                 <input 
                   type="url" 
                   class="form-control" 
                   id="img"
                   v-model="img"
+                  style="border: 2px solid var(--treinta-uno-negro);"
+                  placeholder="https://ejemplo.com/imagen.jpg"
                 >
+                
+                <!-- Vista previa de la imagen -->
+                <div v-if="img" class="mt-3">
+                  <label class="form-label fw-bold" style="color: var(--treinta-uno-azul);">Vista previa:</label>
+                  <div class="text-center">
+                    <img 
+                      :src="img" 
+                      alt="Vista previa" 
+                      class="img-fluid rounded"
+                      style="max-width: 200px; max-height: 150px; border: 2px solid var(--treinta-uno-negro);"
+                      @error="$event.target.style.display='none'"
+                    >
+                  </div>
+                </div>
               </div>
 
               <div class="mb-3 form-check">
