@@ -7,7 +7,7 @@ const store = useStore()
 const cursos = computed(() => store.getters.getCursos)
 const loadingCursos = computed(() => store.getters.isLoadingCursos)
 const userEmail = computed(() => store.getters.getUserEmail)
-const isLoggedIn = computed(() => store.getters.isLoggedIn)
+const isLoggedIn = computed(() => store.getters.isAuthenticated)
 
 const handleImageError = (event) => {
   // Si falla la imagen, usar una imagen de respaldo
