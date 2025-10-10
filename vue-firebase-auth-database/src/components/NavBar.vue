@@ -28,6 +28,11 @@
             </router-link>
           </li>
           <li class="nav-item">
+            <router-link class="nav-link" to="/carrito" active-class="active" style="color: var(--treinta-uno-beige) !important;">
+              🛒 Carrito ({{ totalCarrito }})
+            </router-link>
+          </li>
+          <li class="nav-item">
             <router-link class="nav-link" to="/administracion" active-class="active" style="color: var(--treinta-uno-beige) !important;">
               Administración
             </router-link>
@@ -62,6 +67,7 @@ export default {
     const store = useStore()
     
     const userEmail = computed(() => store.getters.getUserEmail)
+    const totalCarrito = computed(() => store.getters.getTotalCarrito)
     
     const handleLogout = () => {
       if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
@@ -71,6 +77,7 @@ export default {
     
     return {
       userEmail,
+      totalCarrito,
       handleLogout
     }
   }

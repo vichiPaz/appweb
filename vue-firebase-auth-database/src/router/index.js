@@ -31,6 +31,12 @@ const router = createRouter({
       beforeEnter: requireAuth
     },
     {
+      path: '/carrito',
+      name: 'carrito',
+      component: () => import('../views/CarritoView.vue'),
+      beforeEnter: requireAuth
+    },
+    {
       path: '/editar/:id',
       name: 'editar',
       component: () => import('../views/EditarView.vue'),
