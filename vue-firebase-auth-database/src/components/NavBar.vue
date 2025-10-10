@@ -27,20 +27,20 @@
               Inicio
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="isLoggedIn" class="nav-item">
             <router-link class="nav-link" to="/carrito" active-class="active" style="color: var(--treinta-uno-beige) !important;">
               🛒 Carrito ({{ totalCarrito }})
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="isLoggedIn" class="nav-item">
             <router-link class="nav-link" to="/administracion" active-class="active" style="color: var(--treinta-uno-beige) !important;">
               Administración
             </router-link>
           </li>
         </ul>
         
-        <div class="d-flex align-items-center">
-          <span v-if="isLoggedIn" class="text-white me-3">
+        <div v-if="isLoggedIn" class="d-flex align-items-center">
+          <span class="text-white me-3">
             {{ userEmail }}
           </span>
           <button 
@@ -51,6 +51,15 @@
           >
             Cerrar Sesión
           </button>
+        </div>
+        <div v-else class="d-flex align-items-center">
+          <router-link 
+            to="/login" 
+            class="btn btn-outline-warning btn-sm"
+            style="border-color: var(--treinta-uno-amarillo); color: var(--treinta-uno-amarillo);"
+          >
+            Iniciar Sesión
+          </router-link>
         </div>
       </div>
     </div>
