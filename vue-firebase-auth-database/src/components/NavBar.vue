@@ -2,9 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--treinta-uno-negro) 0%, #2c2c2c 100%); box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
     <div class="container-fluid">
       <router-link class="navbar-brand d-flex align-items-center" to="/home">
-        <div class="navbar-logo-placeholder">
-          <span class="navbar-logo-text">31</span>
-        </div>
+        <img src="https://i0.wp.com/31minutosoficial.cl/wp-content/uploads/2015/09/cropped-512logo31m-wpicon.png?resize=200%2C200&ssl=1" alt="Logo 31 Minutos" class="navbar-logo me-2"        />
         <strong style="color: var(--treinta-uno-amarillo) !important;">31 MINUTOS - CURSOS</strong>
       </router-link>
       
@@ -108,7 +106,13 @@ export default {
 .nav-link:hover {
   color: #fff !important;
 }
-
+.navbar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--treinta-uno-amarillo);
+  object-fit: cover;
+}
 .navbar-logo-placeholder {
   height: 35px;
   width: 35px;
