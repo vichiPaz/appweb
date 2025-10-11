@@ -61,3 +61,4 @@ async function eliminarInscripcionEjemplo() {
 
 // Ejecutar la función
 eliminarInscripcionEjemplo()
+
