@@ -1,1 +1,0 @@
-Este es un archivo de prueba para demostrar que los cambios solo afectan al nuevo repositorio.
