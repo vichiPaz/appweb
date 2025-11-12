@@ -4,7 +4,6 @@ import RegisterView from '@/views/RegisterView.vue'
 import { createStore } from 'vuex'
 import { createRouter, createMemoryHistory } from 'vue-router' 
 
-// Router de prueba 
 const router = createRouter({
   history: createMemoryHistory(),
   routes: [
@@ -57,13 +56,11 @@ describe('RegisterView.vue', () => {
       global: { plugins: [createStoreMock(), router] }
     })
 
-    // Campos vacíos
     await wrapper.find('form').trigger('submit.prevent')
     expect(alertMock).toHaveBeenCalledWith(
       'Todos los campos son obligatorios y la contraseña debe tener al menos 6 caracteres'
     )
 
-    // Contraseñas que no coinciden
     await wrapper.find('input#email').setValue('test@example.com')
     await wrapper.find('input#password').setValue('123456')
     await wrapper.find('input#confirmPassword').setValue('654321')

@@ -4,17 +4,14 @@ import { useStore } from 'vuex'
 
 const store = useStore()
 
-// Estados reactivos
 const showModalPago = ref(false)
 const metodoPago = ref('transferencia')
 
-// Computed
 const carrito = computed(() => store.getters.getCarrito)
 const totalCarrito = computed(() => store.getters.getTotalCarrito)
 const totalPrecio = computed(() => store.getters.getTotalPrecioCarrito)
 const userEmail = computed(() => store.getters.getUserEmail)
 
-// Métodos
 const eliminarDelCarrito = (cursoId) => {
   store.dispatch('eliminarDelCarrito', cursoId)
 }
@@ -51,203 +48,295 @@ const procesarCompra = async () => {
 </script>
 
 <template>
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <h1 class="display-4 fw-bold" style="color: var(--treinta-uno-negro); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🛒 Mi Carrito de Cursos</h1>
-      <p class="lead" style="color: var(--treinta-uno-negro); font-weight: 500;">Inscríbete en tus cursos favoritos de 31 Minutos</p>
+  <div class="cart-view">
+    <header class="cart-view__header">
+      <h1>🛒 Mi Carrito de Cursos</h1>
+      <p class="text-secondary">Inscríbete en tus cursos favoritos de 31 Minutos</p>
+    </header>
+
+    <div v-if="totalCarrito === 0" class="empty-state">
+      <h4>🛒 Tu carrito está vacío</h4>
+      <p class="text-secondary">¡Explora nuestros cursos y agrega los que más te gusten!</p>
+      <router-link to="/home" class="btn btn-primary">Ver Cursos</router-link>
     </div>
 
-    <!-- Carrito vacío -->
-    <div v-if="totalCarrito === 0" class="text-center py-5">
-      <div class="alert alert-info" style="border: 3px solid var(--treinta-uno-negro); background: var(--treinta-uno-beige);">
-        <h4 style="color: var(--treinta-uno-negro);">🛒 Tu carrito está vacío</h4>
-        <p style="color: var(--treinta-uno-negro);">¡Explora nuestros cursos y agrega los que más te gusten!</p>
-        <router-link to="/home" class="btn btn-lg" style="
-          background: linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja));
-          color: var(--treinta-uno-negro);
-          border: 3px solid var(--treinta-uno-negro);
-          font-weight: bold;
-          border-radius: 15px;
-        ">Ver Cursos</router-link>
-      </div>
-    </div>
-
-    <!-- Carrito con cursos -->
-    <div v-else>
-      <!-- Resumen del carrito -->
-      <div class="row mb-4">
-        <div class="col-md-8">
-          <div class="card" style="border: 3px solid var(--treinta-uno-negro); background: var(--treinta-uno-blanco);">
-            <div class="card-header" style="background: linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja)); color: var(--treinta-uno-negro);">
-              <h5 class="mb-0 fw-bold">📚 Cursos Seleccionados ({{ totalCarrito }})</h5>
-            </div>
-            <div class="card-body">
-              <div v-for="item in carrito" :key="item.cursoId" class="d-flex align-items-center mb-3 p-3" style="border: 2px solid var(--treinta-uno-negro); border-radius: 15px; background: var(--treinta-uno-beige);">
-                <img :src="item.cursoImagen || 'https://picsum.photos/80/60?random=default'" 
-                     :alt="item.cursoNombre" 
-                     class="rounded me-3" 
-                     style="width: 80px; height: 60px; object-fit: cover; border: 2px solid var(--treinta-uno-negro);">
-                
-                <div class="flex-grow-1">
-                  <h6 class="mb-1 fw-bold" style="color: var(--treinta-uno-azul);">{{ item.cursoNombre }}</h6>
-                  <small class="text-muted">Código: {{ item.cursoCodigo }}</small>
-                  <div class="mt-1">
-                    <span class="badge" style="background: linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja)); color: var(--treinta-uno-negro); font-weight: bold; border: 2px solid var(--treinta-uno-negro);">
-                      ${{ item.cursoPrecio.toLocaleString() }}
-                    </span>
-                  </div>
-                </div>
-                
-                <button @click="eliminarDelCarrito(item.cursoId)" 
-                        class="btn btn-sm" 
-                        style="
-                          background: linear-gradient(45deg, var(--treinta-uno-rojo), var(--treinta-uno-naranja));
-                          color: white;
-                          border: 3px solid var(--treinta-uno-negro);
-                          font-weight: bold;
-                          border-radius: 8px;
-                          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                        "
-                        title="Eliminar del carrito">
-                  🗑️
-                </button>
-              </div>
-            </div>
+    <div v-else class="cart-layout">
+      <div class="cart-items">
+        <div class="card">
+          <div class="card__header">
+            <h5 class="font-bold">📚 Cursos Seleccionados ({{ totalCarrito }})</h5>
           </div>
-        </div>
-        
-        <div class="col-md-4">
-          <div class="card" style="border: 3px solid var(--treinta-uno-negro); background: var(--treinta-uno-blanco);">
-            <div class="card-header" style="background: linear-gradient(45deg, var(--treinta-uno-rojo), var(--treinta-uno-naranja)); color: white;">
-              <h5 class="mb-0 fw-bold">💰 Resumen de Compra</h5>
-            </div>
-            <div class="card-body">
-              <div class="d-flex justify-content-between mb-2">
-                <span style="color: var(--treinta-uno-negro); font-weight: bold;">Cursos:</span>
-                <span style="color: var(--treinta-uno-negro); font-weight: bold;">{{ totalCarrito }}</span>
-              </div>
-              <hr style="border-color: var(--treinta-uno-negro);">
-              <div class="d-flex justify-content-between mb-3">
-                <span style="color: var(--treinta-uno-negro); font-weight: bold; font-size: 1.2rem;">Total:</span>
-                <span style="color: var(--treinta-uno-verde); font-weight: bold; font-size: 1.2rem;">${{ totalPrecio.toLocaleString() }}</span>
+          <div class="card__body">
+            <div v-for="item in carrito" :key="item.cursoId" class="cart-item">
+              <img :src="item.cursoImagen || 'https://picsum.photos/80/60?random=default'" 
+                   :alt="item.cursoNombre" 
+                   class="cart-item__image">
+              
+              <div class="cart-item__details">
+                <h6 class="font-bold">{{ item.cursoNombre }}</h6>
+                <span class="text-sm text-secondary">Código: {{ item.cursoCodigo }}</span>
+                <p class="font-bold mt-2">${{ item.cursoPrecio.toLocaleString() }}</p>
               </div>
               
-              <div class="d-grid gap-2">
-                <button @click="abrirModalPago" 
-                        class="btn btn-lg" 
-                        style="
-                          background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
-                          color: var(--treinta-uno-negro);
-                          border: 3px solid var(--treinta-uno-negro);
-                          font-weight: bold;
-                          border-radius: 15px;
-                          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                        ">
-                  💳 Proceder al Pago
-                </button>
-                
-                <button @click="limpiarCarrito" 
-                        class="btn btn-lg" 
-                        style="
-                          background: linear-gradient(45deg, var(--treinta-uno-verde), var(--treinta-uno-azul));
-                          color: white;
-                          border: 3px solid var(--treinta-uno-negro);
-                          font-weight: bold;
-                          border-radius: 15px;
-                          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                        ">
-                  🗑️ Limpiar Carrito
-                </button>
-              </div>
+              <button @click="eliminarDelCarrito(item.cursoId)" class="btn btn-secondary" title="Eliminar del carrito">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cart-summary">
+        <div class="card">
+          <div class="card__header">
+            <h5 class="font-bold">💰 Resumen de Compra</h5>
+          </div>
+          <div class="card__body">
+            <div class="summary-row">
+              <span>Cursos:</span>
+              <span class="font-bold">{{ totalCarrito }}</span>
+            </div>
+            <hr class="divider">
+            <div class="summary-row summary-row--total">
+              <span>Total:</span>
+              <span class="font-bold">${{ totalPrecio.toLocaleString() }}</span>
+            </div>
+            
+            <div class="summary-actions">
+              <button @click="abrirModalPago" class="btn btn-primary">
+                💳 Proceder al Pago
+              </button>
+              <button @click="limpiarCarrito" class="btn btn-secondary">
+                🗑️ Limpiar Carrito
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal de pago -->
-    <div v-if="showModalPago" class="modal show d-block" style="background: rgba(0,0,0,0.5);">
-      <div class="modal-dialog">
-        <div class="modal-content" style="border: 3px solid var(--treinta-uno-negro); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <div class="modal-header" style="background: linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja)); color: var(--treinta-uno-negro);">
-            <h5 class="modal-title fw-bold">💳 Confirmar Compra</h5>
-            <button type="button" class="btn-close" @click="cerrarModalPago" style="filter: invert(1);"></button>
-          </div>
-          <div class="modal-body" style="background: var(--treinta-uno-blanco); padding: 2rem;">
-            <div class="mb-4">
-              <h6 style="color: var(--treinta-uno-negro); font-weight: bold;">Resumen de tu compra:</h6>
-              <ul class="list-unstyled">
-                <li v-for="item in carrito" :key="item.cursoId" class="mb-1">
-                  <span style="color: var(--treinta-uno-azul); font-weight: bold;">{{ item.cursoNombre }}</span> - 
-                  <span style="color: var(--treinta-uno-verde); font-weight: bold;">${{ item.cursoPrecio.toLocaleString() }}</span>
-                </li>
-              </ul>
-              <hr style="border-color: var(--treinta-uno-negro);">
-              <div class="d-flex justify-content-between">
-                <span style="color: var(--treinta-uno-negro); font-weight: bold; font-size: 1.2rem;">Total a pagar:</span>
-                <span style="color: var(--treinta-uno-verde); font-weight: bold; font-size: 1.2rem;">${{ totalPrecio.toLocaleString() }}</span>
-              </div>
-            </div>
-            
-            <div class="mb-4">
-              <label class="form-label fw-bold" style="color: var(--treinta-uno-negro);">Método de pago:</label>
-              <select v-model="metodoPago" class="form-select" style="border: 2px solid var(--treinta-uno-negro); border-radius: 10px; background: var(--treinta-uno-beige);">
-                <option value="transferencia">🏦 Transferencia Bancaria</option>
-                <option value="efectivo">💵 Efectivo</option>
-                <option value="tarjeta">💳 Tarjeta de Crédito</option>
-              </select>
-            </div>
-            
-            <div class="alert alert-info" style="border: 2px solid var(--treinta-uno-negro); background: var(--treinta-uno-beige);">
-              <small style="color: var(--treinta-uno-negro);">
-                <strong>📧 Email de confirmación:</strong> {{ userEmail }}<br>
-                <strong>📋 Estado:</strong> Pendiente de confirmación
-              </small>
+    <div v-if="showModalPago" class="modal-overlay" @click.self="cerrarModalPago">
+      <div class="modal-container">
+        <header class="modal-header">
+          <h5 class="modal-title">💳 Confirmar Compra</h5>
+          <button @click="cerrarModalPago" class="modal-close-btn">×</button>
+        </header>
+        <div class="modal-body">
+          <div class="form-group">
+            <h6>Resumen de tu compra:</h6>
+            <ul class="summary-list">
+              <li v-for="item in carrito" :key="item.cursoId">
+                <span>{{ item.cursoNombre }}</span>
+                <span class="font-bold">${{ item.cursoPrecio.toLocaleString() }}</span>
+              </li>
+            </ul>
+            <hr class="divider">
+            <div class="summary-row summary-row--total">
+              <span>Total a pagar:</span>
+              <span class="font-bold">${{ totalPrecio.toLocaleString() }}</span>
             </div>
           </div>
-          <div class="modal-footer" style="background: var(--treinta-uno-beige); border-top: 3px solid var(--treinta-uno-negro); padding: 1.5rem;">
-            <button type="button" class="btn btn-lg me-3" @click="cerrarModalPago" style="
-              background: var(--treinta-uno-rojo);
-              color: white;
-              border: 3px solid var(--treinta-uno-negro);
-              font-weight: bold;
-              border-radius: 10px;
-            ">❌ Cancelar</button>
-            <button type="button" class="btn btn-lg" @click="procesarCompra" style="
-              background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
-              color: var(--treinta-uno-negro);
-              border: 3px solid var(--treinta-uno-negro);
-              font-weight: bold;
-              border-radius: 10px;
-            ">✅ Confirmar Compra</button>
+          
+          <div class="form-group">
+            <label>Método de pago:</label>
+            <select v-model="metodoPago">
+              <option value="transferencia">🏦 Transferencia Bancaria</option>
+              <option value="tarjeta">💳 Tarjeta de Crédito</option>
+            </select>
+          </div>
+          
+          <div class="info-box">
+            <p><strong>Email de confirmación:</strong> {{ userEmail }}</p>
+            <p><strong>Estado:</strong> Pendiente de confirmación</p>
           </div>
         </div>
+        <footer class="modal-footer">
+          <button @click="cerrarModalPago" class="btn btn-secondary">Cancelar</button>
+          <button @click="procesarCompra" class="btn btn-primary">Confirmar Compra</button>
+        </footer>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.container {
-  min-height: calc(100vh - 56px);
+.cart-view {
+  padding: 2rem 0;
 }
-
-.modal {
-  z-index: 1050;
+.cart-view__header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
-
+.cart-view__header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+}
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 1024px) {
+  .cart-layout {
+    grid-template-columns: 2fr 1fr;
+  }
+}
 .card {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.card__header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-background);
+}
+.card__body {
+  padding: 1.5rem;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+.cart-item:not(:last-child) {
+  border-bottom: 1px solid var(--color-border);
+}
+.cart-item__image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+}
+.cart-item__details {
+  flex-grow: 1;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.summary-row--total {
+  font-size: 1.25rem;
+}
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1rem 0;
+}
+.summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+.modal-container {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+.summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.summary-list li {
+  display: flex;
+  justify-content: space-between;
+}
+.info-box {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+}
+.info-box p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+.info-box p:not(:last-child) {
+  margin-bottom: 0.5rem;
 }
 </style>

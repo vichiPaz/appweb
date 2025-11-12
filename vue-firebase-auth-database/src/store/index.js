@@ -19,33 +19,26 @@ import router from "../router"
 
 export default createStore({
   state: {
-    // Estado del usuario
     user: null,
     loadingUser: false,
     
-    // Estado de los cursos
     cursos: [],
     loadingCursos: false,
     
-    // Estado del carrito
     carrito: [],
     
-    // Estado de las inscripciones
     inscripciones: [],
     loadingInscripciones: false,
     
-    // Listener para desuscribirse
     unsubscribeCursos: null,
     unsubscribeInscripciones: null
   },
   
   getters: {
-    // Getters para usuario
     getUser: (state) => state.user,
     isAuthenticated: (state) => state.user !== null,
     getUserEmail: (state) => state.user?.email || '',
     
-    // Getters para cursos
     getCursos: (state) => state.cursos,
     getCursoById: (state) => (id) => {
       return state.cursos.find(curso => curso.id === id)
@@ -57,20 +50,17 @@ export default createStore({
     isLoadingCursos: (state) => state.loadingCursos,
     isLoadingUser: (state) => state.loadingUser,
     
-    // Getters para el carrito
     getCarrito: (state) => state.carrito,
     getTotalCarrito: (state) => state.carrito.length,
     getTotalPrecioCarrito: (state) => state.carrito.reduce((total, item) => total + item.cursoPrecio, 0),
     getCursoEnCarrito: (state) => (cursoId) => state.carrito.find(item => item.cursoId === cursoId),
     
-    // Getters para inscripciones
     getInscripciones: (state) => state.inscripciones,
     isLoadingInscripciones: (state) => state.loadingInscripciones,
     getInscripcionesPorCurso: (state) => (cursoId) => state.inscripciones.filter(inscripcion => inscripcion.cursoId === cursoId)
   },
   
   mutations: {
-    // Mutations para usuario
     SET_USER(state, user) {
       state.user = user
     },
@@ -78,7 +68,6 @@ export default createStore({
       state.loadingUser = loading
     },
     
-    // Mutations para cursos
     SET_CURSOS(state, cursos) {
       state.cursos = cursos
     },
@@ -108,7 +97,6 @@ export default createStore({
       }
     },
     
-    // Mutations para el carrito
     AGREGAR_AL_CARRITO(state, curso) {
       const existeEnCarrito = state.carrito.find(item => item.cursoId === curso.id)
       if (!existeEnCarrito) {
@@ -130,7 +118,6 @@ export default createStore({
       state.carrito = []
     },
     
-    // Mutations para inscripciones
     SET_INSCRIPCIONES(state, inscripciones) {
       state.inscripciones = inscripciones
     },
@@ -153,7 +140,6 @@ export default createStore({
   },
   
   actions: {
-    // Actions para autenticación
     async registerUser({ commit }, { email, password }) {
       commit('SET_LOADING_USER', true)
       try {
@@ -203,8 +189,6 @@ export default createStore({
             commit('SET_USER', { email: user.email, uid: user.uid })
           } else {
             commit('SET_USER', null)
-            // No resetear cursos cuando el usuario no está logueado
-            // Los cursos deben estar disponibles para todos
           }
           resolve(user)
           unsubscribe()
@@ -212,10 +196,8 @@ export default createStore({
       })
     },
     
-    // Actions para cursos con onSnapshot (tiempo real)
     async getCursos({ commit, state }) {
       if (state.unsubscribeCursos) {
-        // Ya existe un listener activo
         return
       }
       
@@ -223,7 +205,6 @@ export default createStore({
       try {
         const cursosCollection = collection(db, 'cursos')
         
-        // onSnapshot para escuchar cambios en tiempo real
         const unsubscribe = onSnapshot(cursosCollection, (snapshot) => {
           const cursos = []
           snapshot.forEach((doc) => {
@@ -252,7 +233,6 @@ export default createStore({
         const docRef = await addDoc(cursosCollection, curso)
         console.log('Curso agregado con ID:', docRef.id)
         
-        // Forzar recarga de datos para asegurar sincronización
         await dispatch('getCursos')
         
         return docRef.id
@@ -270,10 +250,8 @@ export default createStore({
         await updateDoc(cursoDoc, cursoData)
         console.log('Curso actualizado:', id)
         
-        // Forzar recarga de datos para asegurar sincronización
         await dispatch('getCursos')
         
-        // No necesitamos hacer commit porque onSnapshot lo detectará automáticamente
       } catch (error) {
         console.error('Error al actualizar curso:', error)
         alert('Error al actualizar curso: ' + error.message)
@@ -286,7 +264,6 @@ export default createStore({
         const cursoDoc = doc(db, 'cursos', id)
         await deleteDoc(cursoDoc)
         console.log('Curso eliminado:', id)
-        // No necesitamos hacer commit porque onSnapshot lo detectará automáticamente
       } catch (error) {
         console.error('Error al eliminar curso:', error)
         alert('Error al eliminar curso: ' + error.message)
@@ -294,26 +271,22 @@ export default createStore({
       }
     },
     
-    // Actions para el carrito
     agregarAlCarrito({ commit }, curso) {
       commit('AGREGAR_AL_CARRITO', curso)
     },
     
     async eliminarDelCarrito({ commit, dispatch }, cursoId) {
       commit('ELIMINAR_DEL_CARRITO', cursoId)
-      // Restaurar cupo cuando se elimina del carrito
       await dispatch('restaurarCupo', cursoId)
     },
     
     async limpiarCarrito({ commit, state, dispatch }) {
-      // Restaurar cupos de todos los cursos en el carrito
       for (const item of state.carrito) {
         await dispatch('restaurarCupo', item.cursoId)
       }
       commit('LIMPIAR_CARRITO')
     },
     
-    // Action para reducir cupo cuando se agrega al carrito
     async reducirCupo({ commit }, cursoId) {
       try {
         const cursoDoc = doc(db, 'cursos', cursoId)
@@ -335,7 +308,6 @@ export default createStore({
       }
     },
     
-    // Action para restaurar cupo cuando se elimina del carrito
     async restaurarCupo({ commit }, cursoId) {
       try {
         const cursoDoc = doc(db, 'cursos', cursoId)
@@ -357,7 +329,6 @@ export default createStore({
       }
     },
     
-    // Actions para inscripciones
     async getInscripciones({ commit, state }) {
       if (state.unsubscribeInscripciones) {
         return
@@ -386,7 +357,6 @@ export default createStore({
       }
     },
     
-    // Action para procesar compra
     async procesarCompra({ commit, state }, { metodoPago }) {
       try {
         const user = state.user
@@ -398,7 +368,6 @@ export default createStore({
           throw new Error('El carrito está vacío')
         }
         
-        // Crear inscripciones para cada curso en el carrito
         const inscripciones = state.carrito.map(item => ({
           usuarioId: user.uid,
           usuarioEmail: user.email,
@@ -406,18 +375,15 @@ export default createStore({
           cursoNombre: item.cursoNombre,
           cursoPrecio: item.cursoPrecio,
           fechaInscripcion: new Date(),
-          estado: 'confirmada', // Cambiado a confirmada directamente
+          estado: 'confirmada',
           metodoPago: metodoPago,
           total: item.cursoPrecio
         }))
         
-        // Agregar cada inscripción a Firebase
         for (const inscripcion of inscripciones) {
           await addDoc(collection(db, 'inscripciones'), inscripcion)
         }
         
-        // Limpiar carrito después de la compra SIN restaurar cupos
-        // Los cupos ya fueron reducidos cuando se agregaron al carrito
         commit('LIMPIAR_CARRITO')
         
         console.log('Compra procesada exitosamente')
@@ -430,4 +396,3 @@ export default createStore({
     }
   }
 })
-

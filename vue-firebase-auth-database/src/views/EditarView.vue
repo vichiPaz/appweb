@@ -7,7 +7,7 @@ const store = useStore()
 const route = useRoute()
 const router = useRouter()
 
-// Datos del formulario
+
 const codigo = ref('')
 const nombre = ref('')
 const estado = ref(true)
@@ -23,7 +23,7 @@ const curso = computed(() => store.getters.getCursoById(route.params.id))
 onMounted(() => {
   store.dispatch('getCursos')
   
-  // Esperar a que se cargue el curso
+
   setTimeout(() => {
     if (curso.value) {
       codigo.value = curso.value.codigo
@@ -60,7 +60,7 @@ const handleSubmit = async () => {
     
     alert('✅ Curso actualizado correctamente. Los cambios se verán reflejados en todas las vistas.')
     
-    // Pequeño delay para asegurar que los datos se sincronicen
+
     setTimeout(() => {
       router.push({ name: 'administracion' })
     }, 1000)
@@ -71,167 +71,202 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-          <div class="card-body p-4">
-            <h2 class="text-center mb-4" style="color: var(--treinta-uno-negro);">Editar Curso</h2>
+  <div class="edit-page">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Editar Curso</h2>
+        <p class="text-secondary">Actualiza la información del curso</p>
+      </div>
+      
+      <form @submit.prevent="handleSubmit" v-if="curso">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="codigo">Código *</label>
+            <input type="text" id="codigo" v-model="codigo" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="nombre">Nombre *</label>
+            <input type="text" id="nombre" v-model="nombre" required>
+          </div>
+
+          <div class="form-group form-group--full-width">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" rows="3" v-model="descripcion"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="precio">Precio</label>
+            <input type="number" id="precio" v-model="precio">
+          </div>
+          
+          <div class="form-group">
+            <label for="duracion">Duración</label>
+            <input type="text" id="duracion" placeholder="ej: 2 meses" v-model="duracion">
+          </div>
+
+          <div class="form-group">
+            <label for="cupos">Cupos</label>
+            <input type="number" id="cupos" v-model="cupos">
+          </div>
+          
+          <div class="form-group">
+            <label for="inscritos">Inscritos</label>
+            <input type="number" id="inscritos" v-model="inscritos">
+          </div>
+
+          <div class="form-group form-group--full-width">
+            <label for="img">URL de la imagen:</label>
+            <input type="url" id="img" v-model="img" placeholder="https://ejemplo.com/imagen.jpg">
             
-            <form @submit.prevent="handleSubmit">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="codigo" class="form-label">Código *</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="codigo"
-                    v-model="codigo"
-                    required
-                  >
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="nombre" class="form-label">Nombre *</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="nombre"
-                    v-model="nombre"
-                    required
-                  >
-                </div>
-              </div>
+            <div v-if="img" class="image-preview">
+              <p class="text-sm text-secondary">Vista previa:</p>
+              <img 
+                :src="img" 
+                alt="Vista previa" 
+                @error="$event.target.style.display='none'"
+              >
+            </div>
+          </div>
 
-              <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea 
-                  class="form-control" 
-                  id="descripcion"
-                  rows="3"
-                  v-model="descripcion"
-                ></textarea>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="precio" class="form-label">Precio</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="precio"
-                    v-model="precio"
-                  >
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="duracion" class="form-label">Duración</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="duracion"
-                    placeholder="ej: 2 meses"
-                    v-model="duracion"
-                  >
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="cupos" class="form-label">Cupos</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="cupos"
-                    v-model="cupos"
-                  >
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="inscritos" class="form-label">Inscritos</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="inscritos"
-                    v-model="inscritos"
-                  >
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="img" class="form-label fw-bold" style="color: var(--treinta-uno-negro);">URL de la imagen:</label>
-                <input 
-                  type="url" 
-                  class="form-control" 
-                  id="img"
-                  v-model="img"
-                  style="border: 2px solid var(--treinta-uno-negro);"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                >
-                
-                <!-- Vista previa de la imagen -->
-                <div v-if="img" class="mt-3">
-                  <label class="form-label fw-bold" style="color: var(--treinta-uno-azul);">Vista previa:</label>
-                  <div class="text-center">
-                    <img 
-                      :src="img" 
-                      alt="Vista previa" 
-                      class="img-fluid rounded"
-                      style="max-width: 200px; max-height: 150px; border: 2px solid var(--treinta-uno-negro);"
-                      @error="$event.target.style.display='none'"
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div class="mb-3 form-check">
-                <input 
-                  type="checkbox" 
-                  class="form-check-input" 
-                  id="estado"
-                  v-model="estado"
-                >
-                <label class="form-check-label" for="estado">
-                  Curso activo/disponible
-                </label>
-              </div>
-
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                  💾 Guardar Cambios
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-secondary"
-                  @click="router.push({ name: 'administracion' })"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+          <div class="form-group form-group--full-width">
+            <label class="form-check-label">
+              <input type="checkbox" id="estado" v-model="estado">
+              Curso activo/disponible
+            </label>
           </div>
         </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            @click="router.push({ name: 'administracion' })"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            💾 Guardar Cambios
+          </button>
+        </div>
+      </form>
+      <div v-else class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando curso...</p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.card {
-  border-radius: 20px;
-  border: 3px solid var(--treinta-uno-negro);
-  background: var(--treinta-uno-blanco);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.edit-page {
+  padding: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-.btn {
-  padding: 12px;
+.form-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 2.5rem;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group--full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  border: 2px solid var(--treinta-uno-negro);
+  color: var(--color-text-secondary);
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, var(--treinta-uno-azul) 0%, var(--treinta-uno-verde) 100%);
-  color: white;
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.image-preview {
+  margin-top: 1rem;
+}
+.image-preview img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

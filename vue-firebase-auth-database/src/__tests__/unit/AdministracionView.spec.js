@@ -30,7 +30,6 @@ describe('AdministracionView.vue', () => {
   let wrapper
 
   beforeEach(() => {
-    // Reiniciamos el mock antes de cada test
     vi.clearAllMocks()
     wrapper = shallowMount(AdministracionView)
   })

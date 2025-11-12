@@ -1,24 +1,22 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
 const store = useStore()
+const router = useRouter()
 
-const cursos = computed(() => store.getters.getCursos)
+const cursos = computed(() => store.getters.getCursos.filter(c => c.estado)) // Solo mostrar cursos activos
 const loadingCursos = computed(() => store.getters.isLoadingCursos)
-const userEmail = computed(() => store.getters.getUserEmail)
 const isLoggedIn = computed(() => store.getters.isAuthenticated)
 
 const handleImageError = (event) => {
-  // Si falla la imagen, usar una imagen de respaldo
-  event.target.src = 'https://picsum.photos/300/200?random=fallback'
+  event.target.src = 'https://picsum.photos/400/200?random=fallback'
 }
 
 const getImageUrl = (imgUrl) => {
-  if (!imgUrl) return 'https://picsum.photos/300/200?random=default'
-  // Agregar timestamp para evitar cache
-  const separator = imgUrl.includes('?') ? '&' : '?'
-  return `${imgUrl}${separator}t=${Date.now()}`
+  if (!imgUrl) return 'https://picsum.photos/400/200?random=default'
+  return imgUrl
 }
 
 const cursoEnCarrito = (cursoId) => {
@@ -26,12 +24,10 @@ const cursoEnCarrito = (cursoId) => {
 }
 
 const inscribirseEnCurso = async (curso) => {
-  // Verificar si el usuario está logueado
   if (!isLoggedIn.value) {
     const confirmar = confirm('🔐 Para agregar cursos al carrito necesitas iniciar sesión.\n\n¿Deseas ir al login?')
     if (confirmar) {
-      // Redirigir al login
-      window.location.href = '/login'
+      router.push('/login')
     }
     return
   }
@@ -47,13 +43,9 @@ const inscribirseEnCurso = async (curso) => {
   }
   
   try {
-    // Agregar al carrito
     store.dispatch('agregarAlCarrito', curso)
-    
-    // Reducir cupos disponibles en Firebase
     await store.dispatch('reducirCupo', curso.id)
-    
-    alert(`🛒 ¡Curso "${curso.nombre}" agregado al carrito! Se ha reservado tu cupo.`)
+    alert(`🛒 ¡Curso "${curso.nombre}" agregado al carrito! Se ha reservado tu cupo.`) 
   } catch (error) {
     console.error('Error al inscribirse en el curso:', error)
     alert('❌ Error al inscribirse en el curso: ' + error.message)
@@ -66,264 +58,115 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="home-container">
-    <div class="container py-5">
-      <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold" style="color: var(--treinta-uno-negro); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Catálogo de Cursos</h1>
-        <p class="lead" style="color: var(--treinta-uno-negro); font-weight: 500;">Explora nuestra oferta académica inspirada en 31 Minutos</p>
-      </div>
+  <div class="home-view">
+    <header class="home-view__header">
+      <h1>Catálogo de Cursos</h1>
+      <p class="text-secondary">Explora nuestra oferta académica inspirada en 31 Minutos</p>
+    </header>
 
-      <!-- Loading State -->
-      <div v-if="loadingCursos" class="text-center py-5">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-3">Cargando cursos...</p>
-      </div>
+    <div v-if="loadingCursos" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando cursos...</p>
+    </div>
 
-      <!-- Sin cursos -->
-      <div v-else-if="cursos.length === 0" class="text-center py-5">
-        <div class="alert alert-info">
-          <h4>No hay cursos disponibles</h4>
-          <p>Aún no se han agregado cursos al sistema.</p>
-        </div>
-      </div>
+    <div v-else-if="cursos.length === 0" class="empty-state">
+      <h4>📚 No hay cursos disponibles</h4>
+      <p class="text-secondary">Aún no se han agregado cursos al sistema.</p>
+    </div>
 
-      <!-- Grid de Cursos -->
-      <div v-else class="row g-4">
-        <div v-for="curso in cursos" :key="curso.id" class="col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm curso-card">
-            <div class="card-img-top-wrapper">
-              <img 
-                :src="getImageUrl(curso.img)" 
-                :alt="curso.nombre"
-                class="card-img-top"
-                @error="handleImageError"
-                loading="lazy"
-              >
-              <span 
-                v-if="curso.estado" 
-                class="badge position-absolute top-0 end-0 m-3"
-                style="background-color: var(--treinta-uno-verde); color: white; font-weight: bold;"
-              >
-                ✅ Disponible
-              </span>
-              <span 
-                v-else 
-                class="badge position-absolute top-0 end-0 m-3"
-                style="background-color: var(--treinta-uno-rojo); color: white; font-weight: bold;"
-              >
-                ❌ No disponible
-              </span>
-            </div>
-            
-            <div class="card-body d-flex flex-column">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h5 class="card-title fw-bold" style="color: var(--treinta-uno-negro);">{{ curso.nombre }}</h5>
-                <span class="badge" style="background-color: var(--treinta-uno-azul); color: white; font-weight: bold;">{{ curso.codigo }}</span>
-              </div>
-              
-              <p class="card-text text-muted flex-grow-1">{{ curso.descripcion }}</p>
-              
-              <div class="curso-info mt-3">
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">
-                    <i class="bi bi-clock"></i> Duración:
-                  </span>
-                  <strong>{{ curso.duracion }}</strong>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">
-                    <i class="bi bi-cash"></i> Precio:
-                  </span>
-                  <strong style="color: var(--treinta-uno-verde);">${{ Number(curso.precio).toLocaleString() }}</strong>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">
-                    <i class="bi bi-people"></i> Cupos:
-                  </span>
-                  <strong>{{ curso.cupos }}</strong>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted">
-                    <i class="bi bi-person-check"></i> Inscritos:
-                  </span>
-                  <strong>{{ curso.inscritos }}</strong>
-                </div>
-              </div>
-              
-              <div class="mt-3">
-                <div class="progress" style="height: 10px; border: 2px solid var(--treinta-uno-negro); border-radius: 10px;">
-                  <div 
-                    class="progress-bar" 
-                    :style="{ 
-                      width: `${(curso.inscritos / curso.cupos) * 100}%`,
-                      backgroundColor: '#4169E1',
-                      borderRadius: '8px'
-                    }"
-                  ></div>
-                </div>
-                <small class="text-muted">
-                  {{ curso.cupos - curso.inscritos }} cupos disponibles
-                </small>
-              </div>
-            </div>
-            
-            <!-- Card Footer con botón de inscripción -->
-            <div class="card-footer bg-transparent" style="border-top: 3px solid var(--treinta-uno-negro);">
-              <div class="d-grid">
-                <button 
-                  v-if="curso.estado && (curso.cupos - curso.inscritos > 0)"
-                  @click="inscribirseEnCurso(curso)"
-                  class="btn btn-lg btn-inscribirse"
-                  :class="{ 'btn-inscrito': cursoEnCarrito(curso.id) }"
-                  :disabled="cursoEnCarrito(curso.id)"
-                >
-                  <span v-if="cursoEnCarrito(curso.id)">✅ En Carrito</span>
-                  <span v-else>🛒 Inscribirse Ahora</span>
-                </button>
-                
-                <button 
-                  v-else-if="curso.estado && (curso.cupos - curso.inscritos <= 0)"
-                  class="btn btn-lg btn-sin-cupos"
-                  disabled
-                >
-                  ❌ Sin Cupos Disponibles
-                </button>
-                
-                <button 
-                  v-else
-                  class="btn btn-lg btn-no-disponible"
-                  disabled
-                >
-                  📚 Curso No Disponible
-                </button>
-              </div>
-            </div>
+    <div v-else class="course-grid">
+      <article v-for="curso in cursos" :key="curso.id" class="course-card">
+        <img 
+          :src="getImageUrl(curso.img)" 
+          :alt="`Banner del curso ${curso.nombre}`" 
+          class="course-card__image"
+          @error="handleImageError"
+          loading="lazy"
+        />
+        <div class="course-card-content">
+          <h3 class="text-lg font-bold">{{ curso.nombre }}</h3>
+          <p class="text-sm text-secondary mt-2">{{ curso.descripcion }}</p>
+          
+          <div class="course-card__details">
+            <span><strong>Precio:</strong> ${{ parseInt(curso.precio).toLocaleString() }}</span>
+            <span><strong>Duración:</strong> {{ curso.duracion }}</span>
+            <span><strong>Cupos:</strong> {{ curso.inscritos }} / {{ curso.cupos }}</span>
+          </div>
+
+          <div class="course-card-actions">
+            <button 
+              @click="inscribirseEnCurso(curso)"
+              class="btn"
+              :class="cursoEnCarrito(curso.id) ? 'btn-secondary' : 'btn-primary'"
+              :disabled="cursoEnCarrito(curso.id) || (curso.cupos - curso.inscritos <= 0)"
+            >
+              <span v-if="cursoEnCarrito(curso.id)">✅ En Carrito</span>
+              <span v-else-if="(curso.cupos - curso.inscritos <= 0)">❌ Sin Cupos</span>
+              <span v-else>🛒 Inscribirse</span>
+            </button>
           </div>
         </div>
-      </div>
+      </article>
     </div>
   </div>
 </template>
 
 <style scoped>
-.home-container {
-  background: linear-gradient(135deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 100%);
-  min-height: calc(100vh - 56px);
-  position: relative;
+.home-view {
+  padding: 2rem 0;
 }
 
-.home-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
-  pointer-events: none;
+.home-view__header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-.curso-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 3px solid var(--treinta-uno-negro);
-  border-radius: 20px;
-  overflow: hidden;
-  background: var(--treinta-uno-blanco);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.home-view__header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
-.curso-card:hover {
-  transform: translateY(-15px) rotate(2deg);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
-  border-color: var(--treinta-uno-rojo);
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
 }
 
-.card-img-top-wrapper {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-  background-color: #f0f0f0;
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
 }
 
-.card-img-top {
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.course-card__image {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background-color: white;
-  padding: 20px;
+  height: 180px;
+  object-fit: cover;
 }
 
-.curso-info {
-  font-size: 0.9rem;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 15px;
-}
-
-.display-4 {
-  color: #2c3e50;
-}
-
-.badge {
-  font-size: 0.8rem;
-  padding: 0.5rem 0.8rem;
-}
-
-.btn-inscribirse {
-  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
-  color: var(--treinta-uno-negro);
-  border: 3px solid var(--treinta-uno-negro);
-  font-weight: bold;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.btn-inscribirse:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-  background: linear-gradient(45deg, var(--treinta-uno-rojo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-amarillo) 100%);
-}
-
-.btn-inscrito {
-  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%) !important;
-  color: var(--treinta-uno-negro) !important;
-  cursor: not-allowed;
-  opacity: 0.9;
-  border: 3px solid var(--treinta-uno-negro);
-  font-weight: bold;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.btn-sin-cupos {
-  background: linear-gradient(45deg, var(--treinta-uno-rojo), var(--treinta-uno-naranja));
-  color: white;
-  border: 3px solid var(--treinta-uno-negro);
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: not-allowed;
-  opacity: 0.8;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.btn-no-disponible {
-  background: linear-gradient(45deg, var(--treinta-uno-negro), #4a4a4a);
-  color: var(--treinta-uno-beige);
-  border: 3px solid var(--treinta-uno-negro);
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: not-allowed;
-  opacity: 0.7;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.card-footer .btn:not(:disabled):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+.course-card__details {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
 }
 </style>

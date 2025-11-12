@@ -21,25 +21,29 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: () => import('../views/HomeView.vue')
+      component: () => import('../views/HomeView.vue'),
+      meta: { layout: 'DefaultLayout' }
     },
     {
       path: '/administracion',
       name: 'administracion',
       component: () => import('../views/AdministracionView.vue'),
-      beforeEnter: requireAuth
+      beforeEnter: requireAuth,
+      meta: { layout: 'DefaultLayout' }
     },
     {
       path: '/carrito',
       name: 'carrito',
       component: () => import('../views/CarritoView.vue'),
-      beforeEnter: requireAuth
+      beforeEnter: requireAuth,
+      meta: { layout: 'DefaultLayout' }
     },
     {
       path: '/editar/:id',
       name: 'editar',
       component: () => import('../views/EditarView.vue'),
-      beforeEnter: requireAuth
+      beforeEnter: requireAuth,
+      meta: { layout: 'DefaultLayout' }
     },
     {
       path: '/login',

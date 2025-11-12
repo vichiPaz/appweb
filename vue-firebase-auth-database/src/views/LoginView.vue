@@ -24,123 +24,154 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-          <div class="card-body p-5">
-            <!-- Logo Section -->
-            <div class="text-center mb-4">
-              <div class="login-logo-placeholder">
-                <div class="logo-text">31</div>
-              </div>
-              <h2 class="mt-3" style="color: var(--treinta-uno-negro);">Iniciar Sesión</h2>
-              <p class="text-muted">Bienvenido al sistema de cursos</p>
-            </div>
-            <form @submit.prevent="handleSubmit">
-              <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico</label>
-                <input 
-                  type="email" 
-                  class="form-control" 
-                  id="email"
-                  placeholder="correo@ejemplo.com"
-                  v-model="email"
-                  required
-                >
-              </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input 
-                  type="password" 
-                  class="form-control" 
-                  id="password"
-                  placeholder="Mínimo 6 caracteres"
-                  v-model="password"
-                  required
-                >
-              </div>
-              <button 
-                type="submit" 
-                class="btn w-100"
-                :disabled="loadingUser"
-                style="
-                  background: linear-gradient(45deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 50%, var(--treinta-uno-rojo) 100%);
-                  border: 3px solid var(--treinta-uno-negro);
-                  color: var(--treinta-uno-negro);
-                  font-weight: bold;
-                  font-size: 1.1rem;
-                  padding: 15px;
-                  border-radius: 15px;
-                  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-                  text-transform: uppercase;
-                  letter-spacing: 1px;
-                  transition: all 0.3s ease;
-                "
-                @mouseover="$event.target.style.transform = 'translateY(-3px) scale(1.02)'"
-                @mouseout="$event.target.style.transform = 'translateY(0) scale(1)'"
-              >
-                <span v-if="loadingUser" class="spinner-border spinner-border-sm me-2" style="color: var(--treinta-uno-negro);"></span>
-                {{ loadingUser ? 'Cargando...' : 'INICIAR SESIÓN' }}
-              </button>
-            </form>
-            <div class="text-center mt-3">
-              <p>¿No tienes cuenta? 
-                <router-link to="/register" class="text-decoration-none">Regístrate aquí</router-link>
-              </p>
-            </div>
-          </div>
+  <div class="auth-page">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Iniciar Sesión</h2>
+        <p class="text-secondary">Bienvenido al sistema de cursos</p>
+      </div>
+      <form @submit.prevent="handleSubmit" class="auth-form">
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input 
+            type="email" 
+            id="email"
+            placeholder="correo@ejemplo.com"
+            v-model="email"
+            required
+          >
         </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input 
+            type="password" 
+            id="password"
+            placeholder="Mínimo 6 caracteres"
+            v-model="password"
+            required
+          >
+        </div>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          :disabled="loadingUser"
+        >
+          <span v-if="loadingUser" class="spinner"></span>
+          <span v-else>INICIAR SESIÓN</span>
+        </button>
+      </form>
+      <div class="form-footer">
+        <p>¿No tienes cuenta? 
+          <router-link to="/register">Regístrate aquí</router-link>
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.card {
-  border-radius: 20px;
-  border: 3px solid var(--treinta-uno-negro);
-  background: var(--treinta-uno-blanco);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.login-logo-placeholder {
-  height: 80px;
-  width: 80px;
-  background: linear-gradient(135deg, var(--treinta-uno-amarillo) 0%, var(--treinta-uno-naranja) 100%);
-  border: 3px solid var(--treinta-uno-negro);
-  border-radius: 50%;
+.auth-page {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0 auto;
-  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-  transition: transform 0.3s ease;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  padding: 2rem;
 }
 
-.login-logo-placeholder:hover {
-  transform: scale(1.05);
+.form-container {
+  width: 100%;
+  max-width: 450px;
+  padding: 2.5rem;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
 }
 
-.logo-text {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--treinta-uno-negro);
-  text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-/* Estilos específicos para el botón de login */
-.btn:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+.form-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn {
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn:disabled {
-  opacity: 0.6;
-  transform: none !important;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px) scale(0.98) !important;
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--color-text-secondary);
+}
+
+.form-footer a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
 }
 </style>

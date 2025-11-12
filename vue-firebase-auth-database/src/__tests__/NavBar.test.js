@@ -1,4 +1,3 @@
-
 import { mount } from '@vue/test-utils'
 import { createStore } from 'vuex'
 import NavBar from '@/components/NavBar.vue'
@@ -59,4 +58,3 @@ describe('NavBar.vue - basic test with extra checks', () => {
     expect(wrapper.find('a.navbar-brand').exists()).toBe(true)
   })
 })
-
