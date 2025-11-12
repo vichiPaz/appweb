@@ -1,4 +1,3 @@
-
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 import Login from '../views/LoginView.vue' 
@@ -20,7 +19,6 @@ describe('LoginView.vue', () => {
     })
   }
 
-  // Mock de rutas 
   const router = createRouter({
     history: createWebHistory(),
     routes: [

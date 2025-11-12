@@ -6,14 +6,12 @@ import { useStore } from "vuex";
 const store = useStore();
 const router = useRouter();
 
-// Estados reactivos
 const showAddModal = ref(false);
 const showDeleteModal = ref(false);
 const cursoToDelete = ref(null);
 const showConfirmCreateModal = ref(false);
 const cursoToCreate = ref(null);
 
-// Formulario para nuevo curso
 const nuevoCurso = ref({
   codigo: "",
   nombre: "",
@@ -26,10 +24,8 @@ const nuevoCurso = ref({
   img: "",
 });
 
-// Estados para vista de inscripciones
-const vistaActual = ref("cursos"); // 'cursos' o 'inscripciones'
+const vistaActual = ref("cursos");
 
-// Computed
 const cursos = computed(() => store.getters.getCursos);
 const loadingCursos = computed(() => store.getters.isLoadingCursos);
 const inscripciones = computed(() => store.getters.getInscripciones);
@@ -37,7 +33,6 @@ const loadingInscripciones = computed(
   () => store.getters.isLoadingInscripciones
 );
 
-// Métodos
 const openAddModal = () => {
   nuevoCurso.value = {
     codigo: "",
@@ -48,7 +43,7 @@ const openAddModal = () => {
     descripcion: "",
     cupos: 0,
     inscritos: 0,
-    img: "https://picsum.photos/300/200?random=new",
+    img: `https://picsum.photos/seed/${Date.now()}/400/200`,
   };
   showAddModal.value = true;
 };
@@ -115,7 +110,6 @@ const toggleEstadoCurso = async (curso) => {
   }
 };
 
-// Métodos para inscripciones
 const cambiarVista = (vista) => {
   vistaActual.value = vista;
 };
@@ -158,872 +152,441 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <h1
-        class="display-4 fw-bold"
-        style="
-          color: var(--treinta-uno-negro);
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        "
-      >
-        Panel de Administración
-      </h1>
-      <p class="lead" style="color: var(--treinta-uno-negro); font-weight: 500">
-        Gestiona cursos e inscripciones
-      </p>
+  <div class="admin-panel">
+    <header class="admin-panel__header">
+      <h1>Panel de Administración</h1>
+      <p class="text-secondary">Gestiona cursos e inscripciones</p>
+    </header>
+
+    <div class="view-switcher">
+      <button @click="cambiarVista('cursos')" class="btn" :class="{ 'btn-primary': vistaActual === 'cursos', 'btn-secondary': vistaActual !== 'cursos' }">
+        📚 Gestión de Cursos
+      </button>
+      <button @click="cambiarVista('inscripciones')" class="btn" :class="{ 'btn-primary': vistaActual === 'inscripciones', 'btn-secondary': vistaActual !== 'inscripciones' }">
+        👥 Alumnos Inscritos
+      </button>
     </div>
 
-    <!-- Botones de navegación entre vistas -->
-    <div class="text-center mb-4">
-      <div class="btn-group" role="group">
-        <button
-          @click="cambiarVista('cursos')"
-          class="btn btn-lg"
-          :style="{
-            background:
-              vistaActual === 'cursos'
-                ? 'linear-gradient(45deg, var(--treinta-uno-amarillo), var(--treinta-uno-naranja))'
-                : '#6c757d',
-            color:
-              vistaActual === 'cursos' ? 'var(--treinta-uno-negro)' : 'white',
-            border: '3px solid var(--treinta-uno-negro)',
-            fontWeight: 'bold',
-            borderRadius: '15px 0 0 15px',
-          }"
-        >
-          📚 Gestión de Cursos
-        </button>
-        <button
-          @click="cambiarVista('inscripciones')"
-          class="btn btn-lg"
-          :style="{
-            background:
-              vistaActual === 'inscripciones'
-                ? 'linear-gradient(45deg, var(--treinta-uno-verde), var(--treinta-uno-azul))'
-                : '#6c757d',
-            color: 'white',
-            border: '3px solid var(--treinta-uno-negro)',
-            fontWeight: 'bold',
-            borderRadius: '0 15px 15px 0',
-          }"
-        >
-          👥 Alumnos Inscritos
-        </button>
-      </div>
-    </div>
-
-    <!-- Vista de Cursos -->
-    <div v-if="vistaActual === 'cursos'">
-      <!-- Botón para agregar curso -->
-      <div class="text-center mb-4">
-        <button
-          @click="openAddModal"
-          class="btn btn-lg"
-          style="
-            background: linear-gradient(
-              45deg,
-              var(--treinta-uno-amarillo) 0%,
-              var(--treinta-uno-naranja) 50%,
-              var(--treinta-uno-rojo) 100%
-            );
-            border: 3px solid var(--treinta-uno-negro);
-            color: var(--treinta-uno-negro);
-            font-weight: bold;
-            padding: 15px 30px;
-            border-radius: 15px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-          "
-          @mouseover="
-            $event.target.style.transform = 'translateY(-3px) scale(1.02)'
-          "
-          @mouseout="$event.target.style.transform = 'translateY(0) scale(1)'"
-        >
+    <section v-if="vistaActual === 'cursos'">
+      <div class="section-header">
+        <button @click="openAddModal" class="btn btn-primary">
           ➕ Agregar Nuevo Curso
         </button>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loadingCursos" class="text-center py-5">
-        <div
-          class="spinner-border text-warning"
-          style="width: 3rem; height: 3rem"
-          role="status"
-        >
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-3" style="color: var(--treinta-uno-negro)">
-          Cargando cursos...
-        </p>
+      <div v-if="loadingCursos" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando cursos...</p>
       </div>
 
-      <!-- Sin cursos -->
-      <div v-else-if="cursos.length === 0" class="text-center py-5">
-        <div
-          class="alert alert-info"
-          style="
-            border: 3px solid var(--treinta-uno-negro);
-            background: var(--treinta-uno-beige);
-          "
-        >
-          <h4 style="color: var(--treinta-uno-negro)">
-            📚 No hay cursos disponibles
-          </h4>
-          <p style="color: var(--treinta-uno-negro)">
-            Aún no se han agregado cursos al sistema.
-          </p>
-        </div>
+      <div v-else-if="cursos.length === 0" class="empty-state">
+        <h4>📚 No hay cursos disponibles</h4>
+        <p class="text-secondary">Aún no se han agregado cursos al sistema.</p>
       </div>
 
-      <!-- Tabla de cursos -->
-      <div v-else class="table-responsive">
-        <table
-          class="table table-striped table-hover"
-          style="
-            border: 3px solid var(--treinta-uno-negro);
-            border-radius: 15px;
-            overflow: hidden;
-          "
-        >
-          <thead
-            style="
-              background: linear-gradient(
-                45deg,
-                var(--treinta-uno-azul),
-                var(--treinta-uno-verde)
-              );
-              color: white;
-            "
-          >
-            <tr>
-              <th style="border: none; font-weight: bold">Código</th>
-              <th style="border: none; font-weight: bold">Nombre</th>
-              <th style="border: none; font-weight: bold">Precio</th>
-              <th style="border: none; font-weight: bold">Duración</th>
-              <th style="border: none; font-weight: bold">Cupos</th>
-              <th style="border: none; font-weight: bold">Estado</th>
-              <th style="border: none; font-weight: bold">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="curso in cursos"
-              :key="curso.id"
-              style="background: var(--treinta-uno-blanco)"
-            >
-              <td
-                style="
-                  border: 1px solid var(--treinta-uno-negro);
-                  font-weight: bold;
-                "
-              >
-                {{ curso.codigo }}
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                <strong style="color: var(--treinta-uno-azul)">{{
-                  curso.nombre
-                }}</strong>
-                <br />
-                <small style="color: #666">{{ curso.descripcion }}</small>
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                <span style="color: var(--treinta-uno-verde); font-weight: bold"
-                  >${{ parseInt(curso.precio).toLocaleString() }}</span
-                >
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                {{ curso.duracion }}
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                <span style="color: var(--treinta-uno-azul)">{{
-                  curso.inscritos
-                }}</span>
-                /
-                <span style="color: var(--treinta-uno-rojo)">{{
-                  curso.cupos
-                }}</span>
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                <span
-                  :class="curso.estado ? 'badge bg-success' : 'badge bg-danger'"
-                  style="font-weight: bold"
-                >
+      <div v-else class="course-grid">
+        <article v-for="curso in cursos" :key="curso.id" class="course-card">
+          <img :src="curso.img" :alt="`Banner del curso ${curso.nombre}`" class="course-card__image" />
+          <div class="course-card-content">
+            <h3 class="text-lg font-bold">{{ curso.nombre }}</h3>
+            <p class="text-sm text-secondary mt-2">{{ curso.descripcion }}</p>
+            <div class="course-card__details">
+              <span><strong>Precio:</strong> ${{ parseInt(curso.precio).toLocaleString() }}</span>
+              <span><strong>Duración:</strong> {{ curso.duracion }}</span>
+              <span><strong>Cupos:</strong> {{ curso.inscritos }} / {{ curso.cupos }}</span>
+              <span><strong>Estado:</strong>
+                <span class="status-badge" :class="curso.estado ? 'status-badge--active' : 'status-badge--inactive'">
                   {{ curso.estado ? "Activo" : "Inactivo" }}
                 </span>
-              </td>
-              <td style="border: 1px solid var(--treinta-uno-negro)">
-                <div class="btn-group" role="group">
-                  <button
-                    @click="editCurso(curso)"
-                    class="btn btn-sm"
-                    style="
-                      background: var(--treinta-uno-azul);
-                      color: white;
-                      border: 2px solid var(--treinta-uno-negro);
-                      font-weight: bold;
-                    "
-                    title="Editar curso"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    @click="toggleEstadoCurso(curso)"
-                    class="btn btn-sm"
-                    :style="{
-                      background: curso.estado
-                        ? 'var(--treinta-uno-naranja)'
-                        : 'var(--treinta-uno-verde)',
-                      color: 'white',
-                      border: '2px solid var(--treinta-uno-negro)',
-                      fontWeight: 'bold',
-                    }"
-                    :title="curso.estado ? 'Desactivar curso' : 'Activar curso'"
-                  >
-                    {{ curso.estado ? "⏸️" : "▶️" }}
-                  </button>
-                  <button
-                    @click="openDeleteModal(curso)"
-                    class="btn btn-sm"
-                    style="
-                      background: var(--treinta-uno-rojo);
-                      color: white;
-                      border: 2px solid var(--treinta-uno-negro);
-                      font-weight: bold;
-                    "
-                    title="Eliminar curso"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </span>
+            </div>
+            <div class="course-card-actions">
+              <button @click="editCurso(curso)" class="btn btn-secondary" title="Editar curso">✏️</button>
+              <button @click="toggleEstadoCurso(curso)" class="btn btn-secondary" :title="curso.estado ? 'Desactivar curso' : 'Activar curso'">
+                {{ curso.estado ? "⏸️" : "▶️" }}
+              </button>
+              <button @click="openDeleteModal(curso)" class="btn btn-secondary" title="Eliminar curso">🗑️</button>
+            </div>
+          </div>
+        </article>
       </div>
-    </div>
+    </section>
 
-    <!-- Vista de Inscripciones -->
-    <div v-if="vistaActual === 'inscripciones'">
-      <!-- Loading State -->
-      <div v-if="loadingInscripciones" class="text-center py-5">
-        <div
-          class="spinner-border text-warning"
-          style="width: 3rem; height: 3rem"
-          role="status"
-        >
-          <span class="visually-hidden">Cargando inscripciones...</span>
-        </div>
-        <p
-          class="mt-3"
-          style="color: var(--treinta-uno-negro); font-weight: bold"
-        >
-          Cargando inscripciones...
-        </p>
+    <section v-if="vistaActual === 'inscripciones'">
+      <div v-if="loadingInscripciones" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando inscripciones...</p>
       </div>
 
-      <!-- Sin inscripciones -->
-      <div v-else-if="inscripciones.length === 0" class="text-center py-5">
-        <div
-          class="alert alert-info"
-          style="
-            border: 3px solid var(--treinta-uno-negro);
-            background: var(--treinta-uno-beige);
-          "
-        >
-          <h4 style="color: var(--treinta-uno-negro)">
-            📋 No hay inscripciones registradas
-          </h4>
-          <p style="color: var(--treinta-uno-negro)">
-            Aún no hay estudiantes inscritos en los cursos.
-          </p>
-        </div>
+      <div v-else-if="inscripciones.length === 0" class="empty-state">
+        <h4>📋 No hay inscripciones registradas</h4>
+        <p class="text-secondary">Aún no hay estudiantes inscritos en los cursos.</p>
       </div>
 
-      <!-- Lista de inscripciones agrupadas por curso -->
-      <div v-else>
-        <div
-          class="alert alert-success mb-4"
-          style="
-            border: 3px solid var(--treinta-uno-negro);
-            background: var(--treinta-uno-verde);
-            color: white;
-          "
-        >
-          <h5 class="fw-bold">📊 Resumen Total</h5>
+      <div v-else class="enrollments-list">
+        <div class="summary-card">
+          <h5 class="font-bold">📊 Resumen Total</h5>
           <p class="mb-0">
             <strong>Total de inscripciones:</strong> {{ inscripciones.length }}
           </p>
         </div>
 
-        <div
-          v-for="(datos, cursoId) in inscripcionesPorCurso"
-          :key="cursoId"
-          class="mb-5"
-        >
-          <div
-            class="card"
-            style="
-              border: 3px solid var(--treinta-uno-negro);
-              border-radius: 20px;
-              overflow: hidden;
-              box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            "
-          >
-            <div
-              class="card-header"
-              style="
-                background: linear-gradient(
-                  45deg,
-                  var(--treinta-uno-azul),
-                  var(--treinta-uno-verde)
-                );
-                color: white;
-              "
-            >
-              <h4 class="mb-0 fw-bold">
-                📚 {{ datos.cursoNombre }}
-                <span
-                  class="badge float-end"
-                  style="
-                    background: var(--treinta-uno-amarillo);
-                    color: var(--treinta-uno-negro);
-                  "
-                >
-                  {{ datos.alumnos.length }} alumno(s)
-                </span>
-              </h4>
-            </div>
-            <div
-              class="card-body"
-              style="background: var(--treinta-uno-blanco)"
-            >
-              <div class="table-responsive">
-                <table
-                  class="table table-hover"
-                  style="border: 2px solid var(--treinta-uno-negro)"
-                >
-                  <thead style="background: var(--treinta-uno-beige)">
-                    <tr>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        #
-                      </th>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        👤 Email del Alumno
-                      </th>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        📅 Fecha de Inscripción
-                      </th>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        💰 Precio Pagado
-                      </th>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        💳 Método de Pago
-                      </th>
-                      <th
-                        style="
-                          border: 1px solid var(--treinta-uno-negro);
-                          color: var(--treinta-uno-negro);
-                          font-weight: bold;
-                        "
-                      >
-                        📊 Estado
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(inscripcion, index) in datos.alumnos"
-                      :key="inscripcion.id"
-                    >
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        {{ index + 1 }}
-                      </td>
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        <strong style="color: var(--treinta-uno-azul)">{{
-                          inscripcion.usuarioEmail
-                        }}</strong>
-                      </td>
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        {{ formatearFecha(inscripcion.fechaInscripcion) }}
-                      </td>
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        <strong style="color: var(--treinta-uno-verde)"
-                          >${{
-                            Number(inscripcion.cursoPrecio).toLocaleString()
-                          }}</strong
-                        >
-                      </td>
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        <span
-                          class="badge"
-                          style="
-                            background: var(--treinta-uno-naranja);
-                            color: white;
-                          "
-                        >
-                          {{ inscripcion.metodoPago }}
-                        </span>
-                      </td>
-                      <td style="border: 1px solid var(--treinta-uno-negro)">
-                        <span
-                          class="badge"
-                          :style="{
-                            background:
-                              inscripcion.estado === 'confirmada'
-                                ? 'var(--treinta-uno-verde)'
-                                : inscripcion.estado === 'pendiente'
-                                ? 'var(--treinta-uno-naranja)'
-                                : 'var(--treinta-uno-azul)',
-                            color: 'white',
-                          }"
-                        >
-                          {{ inscripcion.estado }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+        <div v-for="(datos, cursoId) in inscripcionesPorCurso" :key="cursoId" class="enrollment-card">
+          <header class="enrollment-card__header">
+            <h4 class="font-bold">📚 {{ datos.cursoNombre }}</h4>
+            <span class="enrollment-count">{{ datos.alumnos.length }} alumno(s)</span>
+          </header>
+          <div class="enrollment-card__body">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Email del Alumno</th>
+                    <th>Fecha de Inscripción</th>
+                    <th>Precio Pagado</th>
+                    <th>Método de Pago</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(inscripcion, index) in datos.alumnos" :key="inscripcion.id">
+                    <td>{{ index + 1 }}</td>
+                    <td class="font-bold">{{ inscripcion.usuarioEmail }}</td>
+                    <td>{{ formatearFecha(inscripcion.fechaInscripcion) }}</td>
+                    <td>${{ Number(inscripcion.cursoPrecio).toLocaleString() }}</td>
+                    <td><span class="status-badge status-badge--neutral">{{ inscripcion.metodoPago }}</span></td>
+                    <td>
+                      <span class="status-badge" :class="`status-badge--${inscripcion.estado}`">
+                        {{ inscripcion.estado }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Modal para agregar curso -->
-    <div
-      v-if="showAddModal"
-      class="modal show d-block"
-      style="background: rgba(0, 0, 0, 0.5)"
-    >
-      <div class="modal-dialog modal-lg">
-        <div
-          class="modal-content"
-          style="
-            border: 3px solid var(--treinta-uno-negro);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-          "
-        >
-          <div
-            class="modal-header"
-            style="
-              background: linear-gradient(
-                45deg,
-                var(--treinta-uno-amarillo),
-                var(--treinta-uno-naranja)
-              );
-              color: var(--treinta-uno-negro);
-              border-bottom: 3px solid var(--treinta-uno-negro);
-            "
-          >
-            <h5
-              class="modal-title fw-bold"
-              style="
-                color: var(--treinta-uno-negro);
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-              "
-            >
-              ➕ Agregar Nuevo Curso
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              @click="closeAddModal"
-              style="filter: invert(1)"
-            ></button>
-          </div>
-          <div class="modal-body" style="background: var(--treinta-uno-blanco)">
-            <form @submit.prevent="confirmAddCurso">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >Código:</label
-                  >
-                  <input
-                    v-model="nuevoCurso.codigo"
-                    type="text"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >Nombre:</label
-                  >
-                  <input
-                    v-model="nuevoCurso.nombre"
-                    type="text"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    required
-                  />
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >Precio:</label
-                  >
-                  <input
-                    v-model="nuevoCurso.precio"
-                    type="number"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >Duración:</label
-                  >
-                  <input
-                    v-model="nuevoCurso.duracion"
-                    type="text"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    required
-                  />
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >Cupos:</label
-                  >
-                  <input
-                    v-model.number="nuevoCurso.cupos"
-                    type="number"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label fw-bold"
-                    style="color: var(--treinta-uno-negro)"
-                    >URL Imagen:</label
-                  >
-                  <input
-                    v-model="nuevoCurso.img"
-                    type="url"
-                    class="form-control"
-                    style="
-                      border: 2px solid var(--treinta-uno-negro);
-                      border-radius: 10px;
-                      background: var(--treinta-uno-beige);
-                    "
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                  />
-                </div>
-              </div>
-              <div class="mb-3">
-                <label
-                  class="form-label fw-bold"
-                  style="color: var(--treinta-uno-negro)"
-                  >Descripción:</label
-                >
-                <textarea
-                  v-model="nuevoCurso.descripcion"
-                  class="form-control"
-                  rows="3"
-                  style="
-                    border: 2px solid var(--treinta-uno-negro);
-                    border-radius: 10px;
-                    background: var(--treinta-uno-beige);
-                  "
-                  required
-                  placeholder="Describe el curso..."
-                ></textarea>
-              </div>
-              <div class="mb-3">
-                <div class="form-check">
-                  <input
-                    v-model="nuevoCurso.estado"
-                    type="checkbox"
-                    class="form-check-input"
-                    id="estado"
-                    style="border: 2px solid var(--treinta-uno-negro)"
-                  />
-                  <label
-                    class="form-check-label fw-bold"
-                    for="estado"
-                    style="color: var(--treinta-uno-negro)"
-                    >✅ Curso activo</label
-                  >
-                </div>
-              </div>
-            </form>
-          </div>
-          <div
-            class="modal-footer"
-            style="
-              background: var(--treinta-uno-beige);
-              border-top: 3px solid var(--treinta-uno-negro);
-              padding: 1.5rem;
-            "
-          >
-            <button
-              type="button"
-              class="btn btn-lg me-3"
-              @click="closeAddModal"
-              style="
-                background: var(--treinta-uno-rojo);
-                color: white;
-                border: 3px solid var(--treinta-uno-negro);
-                font-weight: bold;
-                border-radius: 10px;
-                padding: 10px 25px;
-              "
-            >
-              ❌ Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-lg"
-              @click="confirmAddCurso"
-              style="
-                background: linear-gradient(
-                  45deg,
-                  var(--treinta-uno-verde),
-                  var(--treinta-uno-azul)
-                );
-                color: white;
-                border: 3px solid var(--treinta-uno-negro);
-                font-weight: bold;
-                border-radius: 10px;
-                padding: 10px 25px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-              "
-            >
-              ✅ Agregar Curso
-            </button>
-          </div>
+    <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
+      <div class="modal-container">
+        <header class="modal-header">
+          <h5 class="modal-title">➕ Agregar Nuevo Curso</h5>
+          <button @click="closeAddModal" class="modal-close-btn">×</button>
+        </header>
+        <div class="modal-body">
+          <form @submit.prevent="confirmAddCurso" class="form-grid">
+            <div class="form-group">
+              <label>Código:</label>
+              <input v-model="nuevoCurso.codigo" type="text" required />
+            </div>
+            <div class="form-group">
+              <label>Nombre:</label>
+              <input v-model="nuevoCurso.nombre" type="text" required />
+            </div>
+            <div class="form-group">
+              <label>Precio:</label>
+              <input v-model="nuevoCurso.precio" type="number" required />
+            </div>
+            <div class="form-group">
+              <label>Duración:</label>
+              <input v-model="nuevoCurso.duracion" type="text" required />
+            </div>
+            <div class="form-group">
+              <label>Cupos:</label>
+              <input v-model.number="nuevoCurso.cupos" type="number" required />
+            </div>
+            <div class="form-group">
+              <label>URL Imagen:</label>
+              <input v-model="nuevoCurso.img" type="url" placeholder="https://ejemplo.com/imagen.jpg" />
+            </div>
+            <div class="form-group form-group--full-width">
+              <label>Descripción:</label>
+              <textarea v-model="nuevoCurso.descripcion" rows="3" required></textarea>
+            </div>
+            <div class="form-group form-group--full-width">
+              <label class="form-check-label">
+                <input v-model="nuevoCurso.estado" type="checkbox" />
+                Curso activo
+              </label>
+            </div>
+          </form>
         </div>
+        <footer class="modal-footer">
+          <button @click="closeAddModal" class="btn btn-secondary">Cancelar</button>
+          <button @click="confirmAddCurso" class="btn btn-primary">Agregar Curso</button>
+        </footer>
       </div>
     </div>
 
-    <!-- Modal de confirmación de creación -->
-    <div
-      v-if="showConfirmCreateModal"
-      class="modal show d-block"
-      style="background: rgba(0, 0, 0, 0.5)"
-    >
-      <div class="modal-dialog">
-        <div
-          class="modal-content"
-          style="border: 3px solid var(--treinta-uno-azul); border-radius: 20px"
-        >
-          <div
-            class="modal-header"
-            style="background: var(--treinta-uno-azul); color: white"
-          >
-            <h5 class="modal-title fw-bold">✅ Confirmar Creación</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="cancelCreateCurso"
-            ></button>
-          </div>
-          <div class="modal-body" style="background: var(--treinta-uno-blanco)">
-            <p style="color: var(--treinta-uno-negro); font-weight: bold">
-              Confirmas que deseas crear el curso
-              <strong style="color: var(--treinta-uno-azul)">{{
-                cursoToCreate?.nombre
-              }}</strong
-              >?
-            </p>
-          </div>
-          <div
-            class="modal-footer"
-            style="background: var(--treinta-uno-beige)"
-          >
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="cancelCreateCurso"
-              style="
-                border: 2px solid var(--treinta-uno-negro);
-                font-weight: bold;
-              "
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              @click="createCursoFinal"
-              style="
-                border: 2px solid var(--treinta-uno-negro);
-                font-weight: bold;
-              "
-            >
-              Confirmar
-            </button>
-          </div>
+    <div v-if="showConfirmCreateModal" class="modal-overlay" @click.self="cancelCreateCurso">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h5 class="modal-title">✅ Confirmar Creación</h5>
+                <button @click="cancelCreateCurso" class="modal-close-btn">×</button>
+            </header>
+            <div class="modal-body">
+                <p>Confirmas que deseas crear el curso <strong>{{ cursoToCreate?.nombre }}</strong>?</p>
+            </div>
+            <footer class="modal-footer">
+                <button @click="cancelCreateCurso" class="btn btn-secondary">Cancelar</button>
+                <button @click="createCursoFinal" class="btn btn-primary">Confirmar</button>
+            </footer>
         </div>
-      </div>
     </div>
 
-    <!-- Modal para confirmar eliminación -->
-    <div
-      v-if="showDeleteModal"
-      class="modal show d-block"
-      style="background: rgba(0, 0, 0, 0.5)"
-    >
-      <div class="modal-dialog">
-        <div
-          class="modal-content"
-          style="border: 3px solid var(--treinta-uno-rojo); border-radius: 20px"
-        >
-          <div
-            class="modal-header"
-            style="background: var(--treinta-uno-rojo); color: white"
-          >
-            <h5 class="modal-title fw-bold">⚠️ Confirmar Eliminación</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="closeDeleteModal"
-            ></button>
-          </div>
-          <div class="modal-body" style="background: var(--treinta-uno-blanco)">
-            <p style="color: var(--treinta-uno-negro); font-weight: bold">
-              ¿Estás seguro de que deseas eliminar el curso
-              <strong style="color: var(--treinta-uno-rojo)">{{
-                cursoToDelete?.nombre
-              }}</strong
-              >?
-            </p>
-            <p style="color: var(--treinta-uno-negro)">
-              Esta acción no se puede deshacer.
-            </p>
-          </div>
-          <div
-            class="modal-footer"
-            style="background: var(--treinta-uno-beige)"
-          >
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="closeDeleteModal"
-              style="
-                border: 2px solid var(--treinta-uno-negro);
-                font-weight: bold;
-              "
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger"
-              @click="confirmDeleteCurso"
-              style="
-                border: 2px solid var(--treinta-uno-negro);
-                font-weight: bold;
-              "
-            >
-              Sí, borrar
-            </button>
-          </div>
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="closeDeleteModal">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h5 class="modal-title">⚠️ Confirmar Eliminación</h5>
+                <button @click="closeDeleteModal" class="modal-close-btn">×</button>
+            </header>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el curso <strong>{{ cursoToDelete?.nombre }}</strong>?</p>
+                <p class="text-secondary">Esta acción no se puede deshacer.</p>
+            </div>
+            <footer class="modal-footer">
+                <button @click="closeDeleteModal" class="btn btn-secondary">Cancelar</button>
+                <button @click="confirmDeleteCurso" class="btn btn-primary">Sí, borrar</button>
+            </footer>
         </div>
-      </div>
     </div>
+
   </div>
 </template>
 
 <style scoped>
-.container {
-  min-height: calc(100vh - 56px);
+.admin-panel {
+  padding: 2rem 0;
+}
+.admin-panel__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.admin-panel__header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+.view-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.section-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+}
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.modal {
-  z-index: 1050;
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
-.btn-group .btn {
-  margin: 0 2px;
+.course-card__image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
 }
 
-.table th,
-.table td {
-  vertical-align: middle;
+.course-card__details {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
 }
 
-.btn-group .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: white;
+  text-transform: capitalize;
+}
+.status-badge--active, .status-badge--confirmada {
+  background-color: #10B981;
+}
+.status-badge--inactive {
+  background-color: #EF4444;
+}
+.status-badge--neutral, .status-badge--pendiente {
+    background-color: #F59E0B;
 }
 
-.card {
-  transition: all 0.3s ease;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-container {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border);
 }
 
-.card:hover {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+.form-group--full-width {
+    grid-column: 1 / -1;
+}
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast);
+}
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+.form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.enrollments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.summary-card {
+  background-color: var(--color-surface);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+}
+.enrollment-card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.enrollment-card__header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.enrollment-count {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.enrollment-card__body {
+  padding: 0;
+}
+.table-responsive {
+  overflow-x: auto;
+}
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.custom-table th,
+.custom-table td {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.custom-table thead {
+  background-color: var(--color-background);
+}
+.custom-table th {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+.custom-table tbody tr:last-child td {
+  border-bottom: none;
 }
 </style>
